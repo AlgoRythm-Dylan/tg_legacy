@@ -33,8 +33,6 @@ typedef struct {
 #include <Windows.h>
 #define TG_WINDOWS_MODE true
 
-static DWORD TGPreviousInputMode;
-
 #else
 #include <uchar.h>
 #define TG_WINDOWS_MODE false
@@ -69,6 +67,10 @@ typedef struct {
     int key;
     bool ctrlDown;
 } TGKeyEvent;
+
+#define TG_MOUSE_LEFT 1
+#define TG_MMB 3
+#define TG_MOUSE_RIGHT 2
 
 typedef struct {
     COORD position;
@@ -123,5 +125,6 @@ int TGColorID();
 TGColor TGColorCreate(int, int);
 
 static TGContext TGMainContext = {0};
+static long TGPreviousInputMode;
 
 #endif // TG_H

@@ -101,6 +101,13 @@ TGContext* TG() {
     #else
     TGMainContext.screenBufferHandle = initscr(); // Linux is beautiful
 	start_color();
+	nodelay(TGMainContext.screenBufferHandle, true);
+	mouseinterval(0);
+	keypad(stdscr, true);
+	use_default_colors();
+	cbreak();
+	noecho();
+	mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, &TGPreviousInputMode);
 	getmaxyx(TGMainContext.screenBufferHandle, height, width);
     #endif
 	TGMainContext.drawBuffer = TGBufCreate(width, height);
@@ -164,17 +171,64 @@ TGInput TGGetInput() {
 		1,
 		&numberRead
 	);
+	if (inputRecord.EventType == KEY_EVENT) {
+		input.eventType = TG_EVENT_KEY;
+		input.event.keyEvent.key = inputRecord.Event.KeyEvent.uChar.UnicodeChar;
+		input.event.keyEvent.ctrlDown = inputRecord.Event.KeyEvent.dwControlKeyState & RIGHT_CTRL_PRESSED || 
+			inputRecord.Event.KeyEvent.dwControlKeyState & LEFT_CTRL_PRESSED;
+	}
+	else if (inputRecord.EventType == MOUSE_EVENT) {
+		input.eventType = TG_EVENT_MOUSE;
+		switch (inputRecord.Event.MouseEvent.dwButtonState) {
+		case FROM_LEFT_1ST_BUTTON_PRESSED:
+			input.event.mouseEvent.button = TG_MOUSE_LEFT; break;
+		case FROM_LEFT_2ND_BUTTON_PRESSED:
+			input.event.mouseEvent.button = TG_MMB; // Might be MMB, might be rightmost. No break.
+		case RIGHTMOST_BUTTON_PRESSED:
+			input.event.mouseEvent.button = TG_MOUSE_RIGHT; break;
+		default:
+			input.event.mouseEvent.button = -1;
+		}
+	}
+	else if (inputRecord.EventType == WINDOW_BUFFER_SIZE_EVENT) {
+		input.eventType = TG_EVENT_RESIZE;
+		input.event.resizeEvent.oldSize = TGMainContext.drawBuffer.size;
+		CONSOLE_SCREEN_BUFFER_INFO info;
+		GetConsoleScreenBufferInfo(TGMainContext.screenBufferHandle, &info);
+		input.event.resizeEvent.newSize = info.dwSize;
+		TGHandleResizeEvent(input);
+	}
+	else {
+		input.empty = true; // Sometimes, there are events that need to be ignored
+	}
     #else
 	int ch = wgetch(TGMainContext.screenBufferHandle);
 	if(ch == KEY_RESIZE){
 		input.eventType = TG_EVENT_RESIZE;
-		input.event.resizeEvent.oldSize.X = TGMainContext.drawBuffer.size.X;
-		input.event.resizeEvent.oldSize.Y = TGMainContext.drawBuffer.size.Y;
+		input.event.resizeEvent.oldSize = TGMainContext.drawBuffer.size;
 		int width, height;
 		getmaxyx(TGMainContext.screenBufferHandle, height, width);
 		input.event.resizeEvent.newSize.X = width;
 		input.event.resizeEvent.newSize.Y = height;
 		TGHandleResizeEvent(input);
+	}
+	else if(ch == KEY_MOUSE){
+		input.eventType = TG_EVENT_MOUSE;
+		MEVENT ev;
+		if(getmouse(&ev) == OK){
+			input.event.mouseEvent.position.X = ev.x;
+			input.event.mouseEvent.position.Y = ev.y;
+			if(ev.bstate & BUTTON1_PRESSED) input.event.mouseEvent.button = TG_MOUSE_LEFT;
+			else if(ev.bstate & BUTTON2_PRESSED) input.event.mouseEvent.button = TG_MMB;
+			else if(ev.bstate & BUTTON3_PRESSED) input.event.mouseEvent.button = TG_MOUSE_RIGHT;
+			else input.event.mouseEvent.button = -1;
+		}
+		else{
+			//input.empty = true;
+		}
+	}
+	else if(ch == ERR){
+		input.empty = true;
 	}
 	else{
 		input.eventType = TG_EVENT_KEY;
@@ -210,8 +264,7 @@ void TGHandleResizeEvent(TGInput input) {
 }
 
 int TGTitle(const char *title) {
-    #ifdef _WIN32 // This is only available on windows (for now, lacking ncurses support. 
-	//                                                  There is an escape sequence.)
+    #ifdef _WIN32
 	return SetConsoleTitle(title);
     #else
 	printf("\033]0;%s\007", title);
@@ -226,6 +279,7 @@ void TGEnd(){
 	SetConsoleActiveScreenBuffer(GetStdHandle(STD_OUTPUT_HANDLE));
 	SetConsoleMode(TGMainContext.inputHandle, TGPreviousInputMode);
 	#else
+	mousemask(TGPreviousInputMode, NULL);
 	endwin();
 	#endif
 }
