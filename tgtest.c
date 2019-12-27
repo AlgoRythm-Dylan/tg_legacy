@@ -3,21 +3,21 @@
 
 int main() {
 	TGContext *tg = TG();
-	CHAR_INFO info;
-	info.Char.AsciiChar = 'X';
-	TGBufCell(&tg->drawBuffer, 0, 0, info);
-	TGColor red = TGColorCreate(TG_WHITE, TG_RED);
-	TGAttributes attrs = { .color = red.id };
-	TGBufAttr(&tg->drawBuffer, 0, 0, attrs);
-	TGUpdate();
+	TGCharInfo info;
+	info.UnicodeChar = 'X';
+	info.AsciiChar = 'X';
+    TGColor whiteRed = TGColorCreate(TG_WHITE, TG_RED);
+    info.attributes.color = whiteRed.id;
+    TGCalculateAttrs(&info.attributes);
 	TGTitle("termRant");
 	TGSetCursorVisible(false);
 	bool running = true;
-	while (running) {
+	while (running){
+		TGBufCell(&tg->drawBuffer, 0, 0, info);
 		TGUpdate();
 		TGInput input = TGGetInput();
 		if (!input.empty) {
-			if (input.eventType == TG_EVENT_MOUSE/* && input.event.mouseEvent.button == TG_MOUSE_LEFT*/) running = false;
+			if (input.eventType == TG_EVENT_KEY && input.event.keyEvent.key == 'q') running = false;
 		}
 	}
 	TGEnd();

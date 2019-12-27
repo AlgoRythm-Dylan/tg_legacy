@@ -17,50 +17,48 @@
 static int TGCurrentColorID = 1; // 0 is reserved in ncurses for default pair. This won't even be use in Windows
 
 typedef struct {
+    bool underlined;
+    bool bold;
+    unsigned short attributes;
+    int color;
+} TGAttributes;
+
+typedef struct {
+    int UnicodeChar;
+    char AsciiChar;
+    TGAttributes attributes;
+} TGCharInfo;
+
+typedef struct {
     int id;
     short foreground, background;
     bool foregroundBright, backgroundBright;
 } TGColor;
-
-typedef struct {
-    bool underlined;
-    bool bold;
-    unsigned short Attributes;
-    int color;
-} TGAttributes;
 
 #ifdef _WIN32
 #include <Windows.h>
 #define TG_WINDOWS_MODE true
 
 #else
-#include <uchar.h>
 #define TG_WINDOWS_MODE false
 
-// I will keep the COORD and CHAR_INFO structures from Windows so that I don't abstract away EVERYTHING
+// I will keep the COORD structure from Windows
 typedef struct {
     int X, Y;
 } COORD;
 
-typedef struct {
-    union {
-        char16_t UnicodeChar;
-        char AsciiChar;
-    } Char;
-    TGAttributes Attrs;
-    unsigned short Attributes;
-} CHAR_INFO;
-
 #include <ncursesw/curses.h>
 typedef WINDOW* HANDLE; // Let's make this easy
-
 #endif // Not Win32
 
 // A drawing buffer, for general purposes
 typedef struct {
 	COORD size;
 	int length;
-	CHAR_INFO *buffer;
+    #ifdef _WIN32
+    CHAR_INFO *windowsDrawBuffer;
+    #endif
+    TGCharInfo *buffer;
 } TGBuffer;
 
 typedef struct {
@@ -108,7 +106,7 @@ TGBuffer TGBufCreate(int, int); // Function to allocate a drawing buffer
 TGBuffer TGBufCopy(TGBuffer*); // Deep copy one buffer to another
 void TGBufSize(TGBuffer*, int, int); // Resize a draw buffer
 void TGBufClear(TGBuffer*); // Fill a buffer with blank cells
-void TGBufCell(TGBuffer*, int, int, CHAR_INFO); // Draw to a single cell on the buffer
+void TGBufCell(TGBuffer*, int, int, TGCharInfo); // Draw to a single cell on the buffer
 void TGBufAttr(TGBuffer*, int, int, TGAttributes);
 void TGBufFree(TGBuffer*); // Function to de-allocate a drawing buffer
 void TGCalculateAttrs(TGAttributes*);

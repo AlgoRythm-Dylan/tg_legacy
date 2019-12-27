@@ -5,6 +5,9 @@
 TGBuffer TGBufCreate(int width, int height) {
 	TGBuffer TGBuffer;
 	TGBuffer.buffer = NULL; // Init the buffer to NULL
+	#ifdef _WIN32
+	TGBuffer.windowsDrawBuffer = NULL;
+	#endif
 	TGBufSize(&TGBuffer, width, height);
 	return TGBuffer;
 }
@@ -12,7 +15,7 @@ TGBuffer TGBufCreate(int width, int height) {
 TGBuffer TGBufCopy(TGBuffer* original) {
 	TGBuffer TGBuffer = TGBufCreate(original->size.X, original->size.Y);
 	TGBuffer.length = original->length;
-	memcpy(TGBuffer.buffer, original->buffer, sizeof(CHAR_INFO) * TGBuffer.length);
+	memcpy(TGBuffer.buffer, original->buffer, sizeof(TGCharInfo) * TGBuffer.length);
 	return TGBuffer;
 }
 
@@ -20,9 +23,15 @@ void TGBufSize(TGBuffer* drawBuffer, int width, int height) {
 	// Using free/ malloc here because we aren't interested in retaining data
 	if (drawBuffer->buffer) {
 		free(drawBuffer->buffer);
+		#ifdef _WIN32
+		free(drawBuffer->windowsDrawBuffer);
+		#endif
 	}
 	drawBuffer->length = width * height;
-	drawBuffer->buffer = malloc(sizeof(CHAR_INFO) * drawBuffer->length);
+	drawBuffer->buffer = malloc(sizeof(TGCharInfo) * drawBuffer->length);
+	#ifdef _WIN32
+	drawBuffer->windowsDrawBuffer = malloc(sizeof(CHAR_INFO) * drawBuffer->length);
+	#endif
 	// Copy the size to the buffer record
 	drawBuffer->size.X = width;
 	drawBuffer->size.Y = height;
@@ -32,31 +41,48 @@ void TGBufSize(TGBuffer* drawBuffer, int width, int height) {
 void TGBufClear(TGBuffer *tgBuffer) {
 	int i = 0, limit = tgBuffer->size.X * tgBuffer->size.Y;
 	// Create a blank CHAR_INFO
-	CHAR_INFO clearChar;
-	clearChar.Char.AsciiChar = ' ';
-	clearChar.Char.UnicodeChar = ' ';
+	TGCharInfo clearChar;
+	clearChar.AsciiChar = ' ';
+	clearChar.UnicodeChar = ' ';
 	TGAttributes attrs = { .color = 0 };
 	TGCalculateAttrs(&attrs);
-	clearChar.Attributes = attrs.Attributes;
+	clearChar.attributes = attrs;
+	#ifdef _WIN32
+	CHAR_INFO winClearChar = { 0 };
+	#endif
 	// Set everything to that buffer
 	while (i < limit) {
 		tgBuffer->buffer[i] = clearChar;
+		#ifdef _WIN32
+		tgBuffer->windowsDrawBuffer[i] = winClearChar;
+		#endif
 		i++;
 	}
 }
 
-void TGBufCell(TGBuffer *tgBuffer, int x, int y, CHAR_INFO character) {
+void TGBufCell(TGBuffer *tgBuffer, int x, int y, TGCharInfo character) {
 	if (x >= tgBuffer->size.X || y >= tgBuffer->size.Y || y < 0 || x < 0) return;
 	tgBuffer->buffer[(tgBuffer->size.X * y) + x] = character;
+	#ifdef _WIN32
+	tgBuffer->windowsDrawBuffer[(tgBuffer->size.X * y) + x].Char.AsciiChar = character.AsciiChar;
+	tgBuffer->windowsDrawBuffer[(tgBuffer->size.X * y) + x].Char.UnicodeChar = character.UnicodeChar;
+	tgBuffer->windowsDrawBuffer[(tgBuffer->size.X * y) + x].Attributes = character.attributes.attributes;
+	#endif
 }
 
 void TGBufAttr(TGBuffer *tgBuffer, int x, int y, TGAttributes attr) {
 	if (x > tgBuffer->size.X || y > tgBuffer->size.Y || y < 0 || x < 0) return;
 	TGCalculateAttrs(&attr);
-	tgBuffer->buffer[(tgBuffer->size.X * y) + x].Attributes = attr.Attributes;
+	tgBuffer->buffer[(tgBuffer->size.X * y) + x].attributes = attr;
+	#ifdef _WIN32
+	tgBuffer->windowsDrawBuffer[(tgBuffer->size.X * y) + x].attributes = attr.Attributes;
+	#endif
 }
 
 void TGBufFree(TGBuffer *drawBuffer) {
+	#ifdef _WIN32
+	free(drawBuffer->windowsDrawBuffer);
+	#endif
 	free(drawBuffer->buffer);
 }
 
@@ -70,7 +96,7 @@ void TGCalculateAttrs(TGAttributes* attrs){
 	if(attrs->bold) a |= A_BOLD;
 	if(attrs->underlined) a |= A_UNDERLINE;
 	#endif
-	attrs->Attributes = a;
+	attrs->attributes = a;
 }
 
 TGContext* TG() {
@@ -126,7 +152,7 @@ void TGUpdate() {
 	}; // Rect to draw to on destination
 	WriteConsoleOutput(
 		TGMainContext.screenBufferHandle,
-		TGMainContext.drawBuffer.buffer,
+		TGMainContext.drawBuffer.windowsDrawBuffer,
 		size,
 		pos,
 		&rect
@@ -136,9 +162,9 @@ void TGUpdate() {
 	while(i < TGMainContext.drawBuffer.size.X * TGMainContext.drawBuffer.size.Y){
 		int x = i % TGMainContext.drawBuffer.size.X;
 		int y = (i - x) / TGMainContext.drawBuffer.size.X;
-		attron(TGMainContext.drawBuffer.buffer[i].Attributes);
-		mvwaddch(TGMainContext.screenBufferHandle, y, x, TGMainContext.drawBuffer.buffer[i].Char.AsciiChar);
-		attroff(TGMainContext.drawBuffer.buffer[i].Attributes);
+		attron(TGMainContext.drawBuffer.buffer[i].attributes.attributes);
+		mvwaddch(TGMainContext.screenBufferHandle, y, x, TGMainContext.drawBuffer.buffer[i].UnicodeChar);
+		attroff(TGMainContext.drawBuffer.buffer[i].attributes.attributes);
 		i++;
 	}
     wrefresh(TGMainContext.screenBufferHandle);
