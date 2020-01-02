@@ -75,7 +75,7 @@ void TGBufAttr(TGBuffer *tgBuffer, int x, int y, TGAttributes attr) {
 	TGCalculateAttrs(&attr);
 	tgBuffer->buffer[(tgBuffer->size.X * y) + x].attributes = attr;
 	#ifdef _WIN32
-	tgBuffer->windowsDrawBuffer[(tgBuffer->size.X * y) + x].attributes = attr.Attributes;
+	tgBuffer->windowsDrawBuffer[(tgBuffer->size.X * y) + x].Attributes = attr.attributes;
 	#endif
 }
 
@@ -205,15 +205,21 @@ TGInput TGGetInput() {
 	}
 	else if (inputRecord.EventType == MOUSE_EVENT) {
 		input.eventType = TG_EVENT_MOUSE;
-		switch (inputRecord.Event.MouseEvent.dwButtonState) {
-		case FROM_LEFT_1ST_BUTTON_PRESSED:
-			input.event.mouseEvent.button = TG_MOUSE_LEFT; break;
-		case FROM_LEFT_2ND_BUTTON_PRESSED:
-			input.event.mouseEvent.button = TG_MMB; // Might be MMB, might be rightmost. No break.
-		case RIGHTMOST_BUTTON_PRESSED:
-			input.event.mouseEvent.button = TG_MOUSE_RIGHT; break;
-		default:
-			input.event.mouseEvent.button = -1;
+		if(inputRecord.Event.MouseEvent.dwEventFlags & MOUSE_MOVED){
+			input.event.mouseEvent.action = TG_MOUSE_MOVE;
+		}
+		else{
+			input.event.mouseEvent.action = TG_MOUSE_CLICK;
+			switch (inputRecord.Event.MouseEvent.dwButtonState) {
+			case FROM_LEFT_1ST_BUTTON_PRESSED:
+				input.event.mouseEvent.button = TG_MOUSE_LEFT; break;
+			case FROM_LEFT_2ND_BUTTON_PRESSED:
+				input.event.mouseEvent.button = TG_MMB; // Might be MMB, might be rightmost. No break.
+			case RIGHTMOST_BUTTON_PRESSED:
+				input.event.mouseEvent.button = TG_MOUSE_RIGHT; break;
+			default:
+				input.event.mouseEvent.button = -1;
+			}
 		}
 	}
 	else if (inputRecord.EventType == WINDOW_BUFFER_SIZE_EVENT) {
@@ -244,9 +250,11 @@ TGInput TGGetInput() {
 		if(getmouse(&ev) == OK){
 			input.event.mouseEvent.position.X = ev.x;
 			input.event.mouseEvent.position.Y = ev.y;
+			input.event.mouseEvent.action = TG_MOUSE_CLICK;
 			if(ev.bstate & BUTTON1_PRESSED) input.event.mouseEvent.button = TG_MOUSE_LEFT;
 			else if(ev.bstate & BUTTON2_PRESSED) input.event.mouseEvent.button = TG_MMB;
 			else if(ev.bstate & BUTTON3_PRESSED) input.event.mouseEvent.button = TG_MOUSE_RIGHT;
+			else if(ev.bstate & REPORT_MOUSE_POSITION) input.event.mouseEvent.action = TG_MOUSE_MOVE;
 			else input.event.mouseEvent.button = -1;
 		}
 		else{

@@ -3,6 +3,8 @@
 #ifndef TG_H
 #define TG_H
 
+#define TG_VERSION "1.0.0"
+
 #define TG_BLACK 0
 #define TG_RED 1
 #define TG_GREEN 2
@@ -70,10 +72,13 @@ typedef struct {
 #define TG_MMB 3
 #define TG_MOUSE_RIGHT 2
 
+#define TG_MOUSE_CLICK 1
+#define TG_MOUSE_MOVE 2
+
 typedef struct {
     COORD position;
     short button;
-    short state;
+    short action;
 } TGMouseEvent;
 
 typedef struct {
