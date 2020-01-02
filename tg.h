@@ -104,7 +104,6 @@ typedef struct {
 typedef struct {
 	HANDLE screenBufferHandle, inputHandle;
 	TGBuffer drawBuffer;        //  Needs to be TGBufFree'd
-	TGInput inputBuffer;
 } TGContext;
 
 TGBuffer TGBufCreate(int, int); // Function to allocate a drawing buffer
