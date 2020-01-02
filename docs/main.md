@@ -69,7 +69,8 @@ int main() {
 		TGUpdate();
 		TGInput input = TGGetInput();
 		if (!input.empty) {
-			if (input.eventType == TG_EVENT_KEY && input.event.keyEvent.key == 'q') running = false;
+			if (input.eventType == TG_EVENT_KEY && input.event.keyEvent.key == 'q')
+                running = false;
 		}
 	}
 
