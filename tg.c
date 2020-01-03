@@ -4,7 +4,7 @@
 
 TGBuffer TGBufCreate(int width, int height) {
 	TGBuffer TGBuffer;
-	TGBuffer.buffer = NULL; // Init the buffer to NULL
+	TGBuffer.buffer = NULL;
 	#ifdef _WIN32
 	TGBuffer.windowsDrawBuffer = NULL;
 	#endif
@@ -42,8 +42,7 @@ void TGBufClear(TGBuffer *tgBuffer) {
 	int i = 0, limit = tgBuffer->size.X * tgBuffer->size.Y;
 	// Create a blank CHAR_INFO
 	TGCharInfo clearChar;
-	clearChar.AsciiChar = ' ';
-	clearChar.UnicodeChar = ' ';
+	clearChar.character = ' ';
 	TGAttributes attrs = { .color = 0 };
 	TGCalculateAttrs(&attrs);
 	clearChar.attributes = attrs;
@@ -58,14 +57,15 @@ void TGBufClear(TGBuffer *tgBuffer) {
 		#endif
 		i++;
 	}
+	TGBufCursorPosition(tgBuffer, 0, 0);
 }
 
 void TGBufCell(TGBuffer *tgBuffer, int x, int y, TGCharInfo character) {
 	if (x >= tgBuffer->size.X || y >= tgBuffer->size.Y || y < 0 || x < 0) return;
 	tgBuffer->buffer[(tgBuffer->size.X * y) + x] = character;
 	#ifdef _WIN32
-	tgBuffer->windowsDrawBuffer[(tgBuffer->size.X * y) + x].Char.AsciiChar = character.AsciiChar;
-	tgBuffer->windowsDrawBuffer[(tgBuffer->size.X * y) + x].Char.UnicodeChar = character.UnicodeChar;
+	tgBuffer->windowsDrawBuffer[(tgBuffer->size.X * y) + x].Char.AsciiChar = character.character;
+	tgBuffer->windowsDrawBuffer[(tgBuffer->size.X * y) + x].Char.UnicodeChar = character.character;
 	tgBuffer->windowsDrawBuffer[(tgBuffer->size.X * y) + x].Attributes = character.attributes.attributes;
 	#endif
 }
@@ -97,6 +97,51 @@ void TGCalculateAttrs(TGAttributes* attrs){
 	if(attrs->underlined) a |= A_UNDERLINE;
 	#endif
 	attrs->attributes = a;
+}
+
+void TGBufCursorPosition(TGBuffer *buffer, int x, int y){
+	buffer->virtualCursorPosition.X = x;
+	buffer->virtualCursorPosition.Y = y;
+}
+
+void TGBufCursorMove(TGBuffer* buffer, int amount){
+	int currentIndex = buffer->virtualCursorPosition.X + (buffer->size.X * buffer->virtualCursorPosition.Y);
+	int maxIndex = buffer->size.X * buffer->size.Y;
+	currentIndex += amount; // Amount can be negative
+	if(currentIndex < 0) currentIndex = 0;
+	if(currentIndex > maxIndex) currentIndex = maxIndex;
+	buffer->virtualCursorPosition.X = currentIndex % buffer->size.X;
+	buffer->virtualCursorPosition.Y = (currentIndex - buffer->virtualCursorPosition.X) / buffer->size.X;
+}
+
+void TGBufAddLString(TGBuffer *buffer, char *str){
+	int length = strlen(str);
+	int currentIndex = buffer->virtualCursorPosition.X + (buffer->size.X * buffer->virtualCursorPosition.Y);
+	int indexStart = currentIndex;
+	int maxIndex = buffer->size.X * buffer->size.Y;
+	while(currentIndex <= maxIndex && length > currentIndex - indexStart){
+		TGCharInfo info = { 0 };
+		info.attributes = buffer->currentAttributes;
+		info.character = str[currentIndex - indexStart];
+		TGBufCell(buffer, buffer->virtualCursorPosition.X, buffer->virtualCursorPosition.Y, info);
+		TGBufCursorMove(buffer, 1); // Move the cursor "forwards" by one
+		currentIndex++;
+	}
+}
+
+void TGBufAddLStringAttr(TGBuffer* buffer, char* str, TGAttributes attrs){
+	int length = strlen(str);
+	int currentIndex = buffer->virtualCursorPosition.X + (buffer->size.X * buffer->virtualCursorPosition.Y);
+	int indexStart = currentIndex;
+	int maxIndex = buffer->size.X * buffer->size.Y;
+	while(currentIndex <= maxIndex && length > currentIndex - indexStart){
+		TGCharInfo info = { 0 };
+		info.attributes = attrs;
+		info.character = str[currentIndex - indexStart];
+		TGBufCell(buffer, buffer->virtualCursorPosition.X, buffer->virtualCursorPosition.Y, info);
+		TGBufCursorMove(buffer, 1); // Move the cursor "forwards" by one
+		currentIndex++;
+	}
 }
 
 TGContext* TG() {
@@ -163,7 +208,7 @@ void TGUpdate() {
 		int x = i % TGMainContext.drawBuffer.size.X;
 		int y = (i - x) / TGMainContext.drawBuffer.size.X;
 		attron(TGMainContext.drawBuffer.buffer[i].attributes.attributes);
-		mvwaddch(TGMainContext.screenBufferHandle, y, x, TGMainContext.drawBuffer.buffer[i].UnicodeChar);
+		mvwaddch(TGMainContext.screenBufferHandle, y, x, TGMainContext.drawBuffer.buffer[i].character);
 		attroff(TGMainContext.drawBuffer.buffer[i].attributes.attributes);
 		i++;
 	}
@@ -184,6 +229,43 @@ void TGSetCursorVisible(bool visible) {
     #endif
 }
 
+int TGIsSpecialKey(int keycode){
+	#ifdef _WIN32
+	switch (keycode) {
+		case VK_UP: return TG_KEY_UP;
+		case VK_RIGHT: return TG_KEY_RIGHT;
+		case VK_DOWN: return TG_KEY_DOWN;
+		case VK_LEFT: return TG_KEY_LEFT;
+		case VK_BACK: return TG_KEY_BACKSPACE;
+		case VK_TAB: return TG_KEY_TAB;
+		case VK_ESCAPE: return TG_KEY_ESCAPE;
+		case VK_PRIOR: return TG_KEY_PAGE_UP;
+		case VK_NEXT: return TG_KEY_PAGE_DOWN;
+		case VK_END: return TG_KEY_END;
+		case VK_HOME: return TG_KEY_HOME;
+		case VK_INSERT: return TG_KEY_INSERT;
+		case VK_DELETE: return TG_KEY_DELETE;
+	}
+	#else
+	switch(keycode){
+		case KEY_UP: return TG_KEY_UP;
+		case KEY_RIGHT: return TG_KEY_RIGHT;
+		case KEY_DOWN: return TG_KEY_DOWN;
+		case KEY_LEFT: return TG_KEY_LEFT;
+		case KEY_BACKSPACE: return TG_KEY_BACKSPACE;
+		case KEY_STAB: return TG_KEY_TAB;
+		case 27: return TG_KEY_ESCAPE;
+		case KEY_PPAGE: return TG_KEY_PAGE_UP;
+		case KEY_NPAGE: return TG_KEY_PAGE_DOWN;
+		case KEY_END: return TG_KEY_END;
+		case KEY_HOME: return TG_KEY_HOME;
+		case KEY_IC: return TG_KEY_INSERT;
+		case KEY_DC: return TG_KEY_DELETE;
+	}
+	#endif
+	return 0;
+}
+
 // You should be able to use a TGContext's input buffer rather than creating your own
 // for maximum memory conservation
 TGInput TGGetInput() {
@@ -199,8 +281,15 @@ TGInput TGGetInput() {
 	);
 	if (inputRecord.EventType == KEY_EVENT) {
 		input.eventType = TG_EVENT_KEY;
-		input.event.keyEvent.key = inputRecord.Event.KeyEvent.uChar.UnicodeChar;
-		input.event.keyEvent.ctrlDown = inputRecord.Event.KeyEvent.dwControlKeyState & RIGHT_CTRL_PRESSED || 
+		int specialKey = TGIsSpecialKey(inputRecord.Event.KeyEvent.wVirtualKeyCode);
+		if (specialKey) {
+			input.event.keyEvent.special = true;
+			input.event.keyEvent.key = specialKey;
+		}
+		else {
+			input.event.keyEvent.key = inputRecord.Event.KeyEvent.uChar.UnicodeChar;
+		}
+		input.event.keyEvent.ctrlDown = inputRecord.Event.KeyEvent.dwControlKeyState & RIGHT_CTRL_PRESSED ||
 			inputRecord.Event.KeyEvent.dwControlKeyState & LEFT_CTRL_PRESSED;
 	}
 	else if (inputRecord.EventType == MOUSE_EVENT) {
@@ -266,7 +355,14 @@ TGInput TGGetInput() {
 	}
 	else{
 		input.eventType = TG_EVENT_KEY;
-		input.event.keyEvent.key = ch;
+		int specialKey = TGIsSpecialKey(ch);
+		if(specialKey){
+			input.event.keyEvent.special = true;
+			input.event.keyEvent.key = specialKey;
+		}
+		else{
+			input.event.keyEvent.key = ch;
+		}
 	}
     #endif
 	return input;

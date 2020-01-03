@@ -1,0 +1,47 @@
+VERSION 2.0.0
+
+[!] Breaking changes to TGCharInfo
+    - Merged UnicodeChar and AsciiChar into just TGCharInfo.character
+
+Unsigned the following items:
+    - TGMouseEvent.button
+    - TGMouseEvent.action
+    - TGKeyEvent.key
+    - TGBuffer.length
+    - TGColor.id
+    - TGColor.foregorund
+    - TGColor.background
+    - TGCharInfo.character
+    - TGAttributes.attributes
+    - TGAttributes.color
+
+Added TGKeyEvent.special
+    - True for special keys like the arrow keys.
+
+Added special key constants
+    - TG_KEY_UP
+    - TG_KEY_RIGHT
+    - TG_KEY_DOWN
+    - TG_KEY_LEFT
+    - TG_KEY_BACKSPACE
+    - TG_KEY_TAB
+    - TG_KEY_ESCAPE
+    - TG_KEY_PAGE_UP
+    - TG_KEY_PAGE_DOWN
+    - TG_KEY_END
+    - TG_KEY_HOME
+    - TG_KEY_INSERT
+    - TG_KEY_DELETE
+
+Added attributes to TGBuffer
+    -currentAttributes
+    -virtualCursorPosition
+
+Added function TGBufCursorPosition
+    -Clearing a buffer sets it's virtual cursor position to (0, 0)
+
+Added function TGBufCursorMove
+
+Added function TGBufAddLString
+
+Added function TGBufAddLStringAttr

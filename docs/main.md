@@ -53,8 +53,7 @@ int main() {
     TGContext *tg = TG();
 
     TGCharInfo info;
-    info.UnicodeChar = 'X';
-    info.AsciiChar = 'X';
+    info.character = 'X';
 
     TGColor whiteRed = TGColorCreate(TG_WHITE, TG_RED);
     info.attributes.color = whiteRed.id;
@@ -91,8 +90,7 @@ the main drawing buffer. It's a good idea to keep a reference to this.
 
 ```c
 TGCharInfo info;
-info.UnicodeChar = 'X';
-info.AsciiChar = 'X';
+info.character = 'X';
 ```
 
 Each drawing buffer is made up of these CharInfo objects. They describe the
@@ -159,11 +157,15 @@ console may behave unexpectedly. On Linux, use the `reset` command to fix this.
 * [TG_VERSION](#tg_version)
 * [TG_WINDOWS_MODE](#tg_windows_mode)
 * [TGAttributes](#tgattributes)
+* [TGBufAddLString](#tgbufaddlstring)
+* [TGBufAddLStringAttr](#tgbufaddlstringattr)
 * [TGBufAttr](#tgbufattr)
 * [TGBufCell](#tgbufcell)
 * [TGBufClear](#tgbufclear)
 * [TGBufCopy](#tgbufcopy)
 * [TGBufCreate](#tgbufcreate)
+* [TGBufCursorMove](#tgbufcursormove)
+* [TGBufCursorPosition](#tgbufcursorposition)
 * [TGBuffer](#tgbuffer)
 * [TGBufFree](#tgbuffree)
 * [TGBufSize](#tgbufsize)
@@ -241,11 +243,36 @@ Helpful boolean to tell if you're using the Windows version of TG or not.
 
 A structure to hold attributes, as listed below
 
-| Member     | Data Type | Description                     |
-|------------|-----------|---------------------------------|
-| underlined | bool      | Set to true for underlined text |
-| bold       | bool      | Set to true for bold text       |
-| color      | int       | Color ID                        |
+| Member     | Data Type    | Description                     |
+|------------|--------------|---------------------------------|
+| underlined | bool         | Set to true for underlined text |
+| bold       | bool         | Set to true for bold text       |
+| color      | unsigned int | Color ID                        |
+
+## TGBufAddLString
+
+*function*
+
+Add a "legacy string" - one byte characters - at the current buffer position
+(`virtualCursorPosition`) with the current buffer attributes.
+
+| Argument   | Data Type    | Description                  |
+|------------|--------------|------------------------------|
+| Buffer     | TGBuffer*    | The buffer to draw to        |
+| str        | char*        | String to draw               |
+
+## TGBufAddLStringAttr
+
+*function*
+
+Add a "legacy string" - one byte characters - at the current buffer position
+(`virtualCursorPosition`) with the attributes passed to the function.
+
+| Argument   | Data Type    | Description                  |
+|------------|--------------|------------------------------|
+| Buffer     | TGBuffer*    | The buffer to draw to        |
+| str        | char*        | String to draw               |
+| attributes | TGAttributes | Attributes to use            |
 
 ## TGBufAttr
 
@@ -281,7 +308,7 @@ info contained in a `TGCharInfo`
 
 *function*
 
-Clear a buffer
+Clear a buffer and set it's virtual cursor position to (0, 0)
 
 | Argument   | Data Type    | Description                  |
 |------------|--------------|------------------------------|
@@ -296,6 +323,8 @@ Duplicate a buffer
 | Argument   | Data Type    | Description                  |
 |------------|--------------|------------------------------|
 | Buffer     | TGBuffer*    | The buffer to duplicate      |
+
+
 
 | Return Value | Data Type | Description        |
 |--------------|-----------|--------------------|
@@ -316,16 +345,45 @@ Create a new buffer
 |--------------|-----------|--------------------|
 | New Buffer   | TGBuffer  | New buffer         |
 
+## TGBufCursorMove
+
+*function*
+
+Move the cursor left by some amount. Negative values acceptable to go
+right. Will not loop back around when it reaches the end of the buffer 
+(or the beginning).
+
+| Argument   | Data Type    | Description                     |
+|------------|--------------|---------------------------------|
+| buffer     | TGBuffer*    | The buffer to alter             |
+| amount     | int          | How far left to move the cursor |
+
+## TGBufCursorPosition
+
+*function*
+
+Set the virtual cursor position of a buffer
+
+| Argument   | Data Type    | Description                  |
+|------------|--------------|------------------------------|
+| buffer     | TGBuffer*    | The buffer to alter          |
+| x          | int          | X dimension of position      |
+| y          | int          | Y dimension of position      |
+
+
 ## TGBuffer
 
 *struct*
 
 A buffer structure holding `TGCharInfo` types
 
-| Member     | Data Type   | Description                     |
-|------------|-------------|---------------------------------|
-| size       | COORD       | Dimensions of the buffer        |
-| buffer     | TGCharInfo* | The actual buffer               |
+| Member                | Data Type   | Description                     |
+|-----------------------|-------------|---------------------------------|
+| size                  | COORD       | Dimensions of the buffer        |
+| buffer                | TGCharInfo* | The actual buffer               |
+| length                | unsigned int| Size of buffer in TGCharInfo    |
+| currentAttributes     | TGAttributes| Used as a default for new chars |
+| virtualCursorPosition | COORD       | Used as a default for new chars |
 
 ## TGBufFree
 
@@ -369,12 +427,8 @@ and other attributes
 
 | Member     | Data Type   | Description                     |
 |------------|-------------|---------------------------------|
-| UnicodeChar| int         | Unicode text                    |
-| AsciiChar  | char        | Legacy text                     |
+| character  | unsigned int| Text content of the cell        |
 | attributes | TGAttributes| Text attributes struct          |
-
-*Note: I'm going to remove UnicodeChar and AsciiChar in an upcoming release*
-*and rename them both to just characater. These are left over from the Windows API*
 
 ## TGColor
 
@@ -382,11 +436,11 @@ and other attributes
 
 Describes a color
 
-| Member     | Data Type   | Description                     |
-|------------|-------------|---------------------------------|
-| id         | int         | Unicode text                    |
-| AsciiChar  | char        | Legacy text                     |
-| attributes | TGAttributes| Text attributes struct          |
+| Member     | Data Type      | Description                     |
+|------------|----------------|---------------------------------|
+| id         | unsigned int   | Unicode text                    |
+| foreground | unsigned short | Foreground color ID             |
+| background | unsigned short | Background color ID             |
 
 ## TGColorCreate
 
@@ -401,6 +455,8 @@ frame, you'll run out very quickly.
 |------------|--------------|------------------------------|
 | Foreground | int          | Foreground color ID          |
 | Background | int          | Background color ID          |
+
+
 
 | Return Value | Data Type | Description        |
 |--------------|-----------|--------------------|
@@ -489,10 +545,30 @@ information, see [TGGetInput](#tggetinput)
 
 Holds information about when a user presses a key
 
-| Member             | Data Type   | Description                     |
-|--------------------|-------------|---------------------------------|
-| key                | int         | Which key was pressed           |
-| ctrlDown           | bool        | If ctrl was pressed             |
+Some keys are considered "special", such as the arrow keys. Here is a list
+of "special" keys:
+
+```c
+TG_KEY_UP
+TG_KEY_RIGHT
+TG_KEY_DOWN
+TG_KEY_LEFT
+TG_KEY_BACKSPACE
+TG_KEY_TAB
+TG_KEY_ESCAPE
+TG_KEY_PAGE_UP
+TG_KEY_PAGE_DOWN
+TG_KEY_END
+TG_KEY_HOME
+TG_KEY_INSERT
+TG_KEY_DELETE
+```
+
+| Member             | Data Type   | Description                           |
+|--------------------|-------------|---------------------------------------|
+| key                | unisgned int| Which key was pressed                 |
+| ctrlDown           | bool        | If ctrl was pressed                   |
+| special            | bool        | If the key is one of the special keys |
 
 ## TGMouseEvent
 
@@ -515,11 +591,11 @@ TG_MOUSE_CLICK
 TG_MOUSE_MOVE
 ```
 
-| Member             | Data Type   | Description                     |
-|--------------------|-------------|---------------------------------|
-| position           | COORD       | Where the mouse event occurred  |
-| button             | short       | Which button was pressed        |
-| action             | short       | What the user did               |
+| Member             | Data Type      | Description                     |
+|--------------------|----------------|---------------------------------|
+| position           | COORD          | Where the mouse event occurred  |
+| button             | unsigned short | Which button was pressed        |
+| action             | unsigned short | What the user did               |
 
 ## TGResizeEvent
 

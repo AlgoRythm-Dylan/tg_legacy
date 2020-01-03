@@ -3,7 +3,7 @@
 #ifndef TG_H
 #define TG_H
 
-#define TG_VERSION "1.0.0"
+#define TG_VERSION "2.0.0"
 
 #define TG_BLACK 0
 #define TG_RED 1
@@ -22,18 +22,17 @@ typedef struct {
     bool underlined;
     bool bold;
     unsigned short attributes;
-    int color;
+    unsigned int color;
 } TGAttributes;
 
 typedef struct {
-    int UnicodeChar;
-    char AsciiChar;
+    unsigned int character;
     TGAttributes attributes;
 } TGCharInfo;
 
 typedef struct {
-    int id;
-    short foreground, background;
+    unsigned int id;
+    unsigned short foreground, background;
     bool foregroundBright, backgroundBright;
 } TGColor;
 
@@ -56,16 +55,34 @@ typedef WINDOW* HANDLE; // Let's make this easy
 // A drawing buffer, for general purposes
 typedef struct {
 	COORD size;
-	int length;
+	unsigned int length;
     #ifdef _WIN32
     CHAR_INFO *windowsDrawBuffer;
     #endif
     TGCharInfo *buffer;
+    TGAttributes currentAttributes;
+    COORD virtualCursorPosition;
 } TGBuffer;
 
+#define TG_KEY_UP 0
+#define TG_KEY_RIGHT 1
+#define TG_KEY_DOWN 2
+#define TG_KEY_LEFT 3
+#define TG_KEY_BACKSPACE 4
+#define TG_KEY_TAB 5
+#define TG_KEY_ESCAPE 6
+#define TG_KEY_PAGE_UP 7
+#define TG_KEY_PAGE_DOWN 8
+#define TG_KEY_END 9
+#define TG_KEY_HOME 10
+#define TG_KEY_INSERT 11
+#define TG_KEY_DELETE 12
+
+int TGIsSpecialKey(int);
+
 typedef struct {
-    int key;
-    bool ctrlDown;
+    unsigned int key;
+    bool ctrlDown, special;
 } TGKeyEvent;
 
 #define TG_MOUSE_LEFT 1
@@ -77,8 +94,8 @@ typedef struct {
 
 typedef struct {
     COORD position;
-    short button;
-    short action;
+    unsigned short button;
+    unsigned short action;
 } TGMouseEvent;
 
 typedef struct {
@@ -114,6 +131,10 @@ void TGBufCell(TGBuffer*, int, int, TGCharInfo); // Draw to a single cell on the
 void TGBufAttr(TGBuffer*, int, int, TGAttributes);
 void TGBufFree(TGBuffer*); // Function to de-allocate a drawing buffer
 void TGCalculateAttrs(TGAttributes*);
+void TGBufCursorPosition(TGBuffer*, int, int);
+void TGBufCursorMove(TGBuffer*, int);
+void TGBufAddLString(TGBuffer*, char*); // Add legacy string
+void TGBufAddLStringAttr(TGBuffer*, char*, TGAttributes); // Add legacy string without using buffer current attrs
 
 TGContext* TG(); // Initialization function, which returns a drawing context to the screen
 void TGUpdate(); // Displays what has been drawn

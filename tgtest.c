@@ -3,21 +3,27 @@
 
 int main() {
 	TGContext *tg = TG();
-	TGCharInfo info;
-	info.UnicodeChar = 'X';
-	info.AsciiChar = 'X';
-    TGColor whiteRed = TGColorCreate(TG_WHITE, TG_RED);
-    info.attributes.color = whiteRed.id;
-    TGCalculateAttrs(&info.attributes);
+	tg->drawBuffer.currentAttributes.color = TGColorCreate(TG_WHITE, TG_RED).id;
+	TGCalculateAttrs(&tg->drawBuffer.currentAttributes);
 	TGTitle("termRant");
-	TGSetCursorVisible(false);
+	TGAttributes otherAttributes;
+	otherAttributes.color = TGColorCreate(TG_BLACK, TG_GREEN).id;
+	TGCalculateAttrs(&otherAttributes);
 	bool running = true;
-	while (running){
-		TGBufCell(&tg->drawBuffer, 0, 0, info);
+	while (running) {
+		TGSetCursorVisible(false);
+		TGBufClear(&tg->drawBuffer);
+		TGBufAddLString(&tg->drawBuffer, "This is happening!");
+		TGBufAddLStringAttr(&tg->drawBuffer, "WOO NEW COLOR", otherAttributes);
+		TGBufAddLString(&tg->drawBuffer, "Back to the other color");
 		TGUpdate();
 		TGInput input = TGGetInput();
-		if (!input.empty) {
-			if (input.eventType == TG_EVENT_KEY && input.event.keyEvent.key == 'q') running = false;
+		if (!input.empty && input.eventType == TG_EVENT_KEY) {
+			if (input.event.keyEvent.special && input.event.keyEvent.key == TG_KEY_DOWN)
+				running = false;
+		}
+		else if (input.eventType == TG_EVENT_RESIZE) {
+			TGHandleResizeEvent(input);
 		}
 	}
 	TGEnd();
