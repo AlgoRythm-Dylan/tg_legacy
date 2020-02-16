@@ -1,30 +1,35 @@
-#include <stdio.h>
 #include "tg.h"
+#include <stdio.h>
+#include <stdlib.h>
 
-int main() {
-	TGContext *tg = TG();
-	tg->drawBuffer.currentAttributes.color = TGColorCreate(TG_WHITE, TG_RED).id;
-	TGCalculateAttrs(&tg->drawBuffer.currentAttributes);
-	TGTitle("termRant");
-	TGAttributes otherAttributes;
-	otherAttributes.color = TGColorCreate(TG_BLACK, TG_GREEN).id;
-	TGCalculateAttrs(&otherAttributes);
-	bool running = true;
-	while (running) {
-		TGSetCursorVisible(false);
-		TGBufClear(&tg->drawBuffer);
-		TGBufAddLString(&tg->drawBuffer, "This is happening!");
-		TGBufAddLStringAttr(&tg->drawBuffer, "WOO NEW COLOR", otherAttributes);
-		TGBufAddLString(&tg->drawBuffer, "Back to the other color");
+int main(){
+
+	TGContext *context = TG();
+	TGColor defaultColor = TGColorCreate(TG_WHITE, TG_BLACK);
+	context->drawBuffer.currentAttributes.color = defaultColor.id;
+	TGCalculateAttrs(&context->drawBuffer.currentAttributes);
+
+	TGCharInfo info = { 0 };
+	info.character = 'A';
+	info.attributes.color = defaultColor.id;
+
+	while(true){
+
+		TGBufClear(&context->drawBuffer);
+		TGBufAddString(&context->drawBuffer, L"Press 'q' to quit");
+		//TGBufCell(&context->drawBuffer, 1, 1, info);
+		TGSetCursorPosition(0, 0);
 		TGUpdate();
+
 		TGInput input = TGGetInput();
-		if (!input.empty && input.eventType == TG_EVENT_KEY) {
-			if (input.event.keyEvent.special && input.event.keyEvent.key == TG_KEY_DOWN)
-				running = false;
+		if(input.empty || input.eventType != TG_EVENT_KEY) continue;
+		if(!input.event.keyEvent.special && input.event.keyEvent.key == 'q'){
+			break;
 		}
-		else if (input.eventType == TG_EVENT_RESIZE) {
-			TGHandleResizeEvent(input);
-		}
+
 	}
+
 	TGEnd();
+	return 0;
+
 }

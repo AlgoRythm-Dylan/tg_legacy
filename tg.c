@@ -6,36 +6,42 @@ TGBuffer TGBufCreate(int width, int height) {
 	TGBuffer TGBuffer;
 	TGBuffer.buffer = NULL;
 	#ifdef _WIN32
-	TGBuffer.windowsDrawBuffer = NULL;
+	TGBuffer.systemDrawBuffer = NULL;
+	#else
+	TGBuffer.systemDrawBuffer = newpad(height, width);
 	#endif
+	TGBuffer.virtualCursorPosition = (COORD) { 0, 0 };
 	TGBufSize(&TGBuffer, width, height);
 	return TGBuffer;
 }
 
-TGBuffer TGBufCopy(TGBuffer* original) {
+/*TGBuffer TGBufDuplicate(TGBuffer* original) {
 	TGBuffer TGBuffer = TGBufCreate(original->size.X, original->size.Y);
 	TGBuffer.length = original->length;
 	memcpy(TGBuffer.buffer, original->buffer, sizeof(TGCharInfo) * TGBuffer.length);
 	return TGBuffer;
-}
+}*/
 
 void TGBufSize(TGBuffer* drawBuffer, int width, int height) {
+	// Check for stupid resize
+	if(drawBuffer->size.X == width && drawBuffer->size.Y == height) return;
 	// Using free/ malloc here because we aren't interested in retaining data
 	if (drawBuffer->buffer) {
 		free(drawBuffer->buffer);
 		#ifdef _WIN32
-		free(drawBuffer->windowsDrawBuffer);
+		free(drawBuffer->systemDrawBuffer);
+		#else
+		wresize(drawBuffer->systemDrawBuffer, height, width);
 		#endif
 	}
 	drawBuffer->length = width * height;
 	drawBuffer->buffer = malloc(sizeof(TGCharInfo) * drawBuffer->length);
 	#ifdef _WIN32
-	drawBuffer->windowsDrawBuffer = malloc(sizeof(CHAR_INFO) * drawBuffer->length);
+	drawBuffer->systemDrawBuffer = malloc(sizeof(CHAR_INFO) * drawBuffer->length);
 	#endif
 	// Copy the size to the buffer record
 	drawBuffer->size.X = width;
 	drawBuffer->size.Y = height;
-	TGBufClear(drawBuffer);
 }
 
 void TGBufClear(TGBuffer *tgBuffer) {
@@ -46,14 +52,14 @@ void TGBufClear(TGBuffer *tgBuffer) {
 	TGAttributes attrs = { .color = 0 };
 	TGCalculateAttrs(&attrs);
 	clearChar.attributes = attrs;
-	#ifdef _WIN32
-	CHAR_INFO winClearChar = { 0 };
-	#endif
 	// Set everything to that buffer
+	#ifndef _WIN32
+	werase(tgBuffer->systemDrawBuffer);
+	#endif
 	while (i < limit) {
 		tgBuffer->buffer[i] = clearChar;
 		#ifdef _WIN32
-		tgBuffer->windowsDrawBuffer[i] = winClearChar;
+		tgBuffer->systemDrawBuffer[i] = (CHAR_INFO) { 0 };
 		#endif
 		i++;
 	}
@@ -62,11 +68,15 @@ void TGBufClear(TGBuffer *tgBuffer) {
 
 void TGBufCell(TGBuffer *tgBuffer, int x, int y, TGCharInfo character) {
 	if (x >= tgBuffer->size.X || y >= tgBuffer->size.Y || y < 0 || x < 0) return;
+	TGCalculateAttrs(&character.attributes);
 	tgBuffer->buffer[(tgBuffer->size.X * y) + x] = character;
 	#ifdef _WIN32
-	tgBuffer->windowsDrawBuffer[(tgBuffer->size.X * y) + x].Char.AsciiChar = character.character;
-	tgBuffer->windowsDrawBuffer[(tgBuffer->size.X * y) + x].Char.UnicodeChar = character.character;
-	tgBuffer->windowsDrawBuffer[(tgBuffer->size.X * y) + x].Attributes = character.attributes.attributes;
+	tgBuffer->systemDrawBuffer[(tgBuffer->size.X * y) + x].Char.AsciiChar = character.character;
+	tgBuffer->systemDrawBuffer[(tgBuffer->size.X * y) + x].Char.UnicodeChar = character.character;
+	tgBuffer->systemDrawBuffer[(tgBuffer->size.X * y) + x].Attributes = character.attributes.attributes;
+	#else
+	wattron(tgBuffer->systemDrawBuffer, character.attributes.attributes);
+	mvwaddch(tgBuffer->systemDrawBuffer, y, x, character.character);
 	#endif
 }
 
@@ -75,13 +85,19 @@ void TGBufAttr(TGBuffer *tgBuffer, int x, int y, TGAttributes attr) {
 	TGCalculateAttrs(&attr);
 	tgBuffer->buffer[(tgBuffer->size.X * y) + x].attributes = attr;
 	#ifdef _WIN32
-	tgBuffer->windowsDrawBuffer[(tgBuffer->size.X * y) + x].Attributes = attr.attributes;
+	tgBuffer->systemDrawBuffer[(tgBuffer->size.X * y) + x].Attributes = attr.attributes;
+	#else
+	mvwaddch(tgBuffer->systemDrawBuffer, y, x, tgBuffer->buffer[(tgBuffer->size.X * y) + x].character);
 	#endif
 }
 
 void TGBufFree(TGBuffer *drawBuffer) {
 	#ifdef _WIN32
-	free(drawBuffer->windowsDrawBuffer);
+	free(drawBuffer->systemDrawBuffer);
+	#else
+	if(drawBuffer->systemDrawBuffer != stdscr){
+		delwin(drawBuffer->systemDrawBuffer);
+	}
 	#endif
 	free(drawBuffer->buffer);
 }
@@ -104,7 +120,7 @@ void TGBufCursorPosition(TGBuffer *buffer, int x, int y){
 	buffer->virtualCursorPosition.Y = y;
 }
 
-void TGBufCursorMove(TGBuffer* buffer, int amount){
+void TGBufCursorMove(TGBuffer *buffer, int amount){
 	int currentIndex = buffer->virtualCursorPosition.X + (buffer->size.X * buffer->virtualCursorPosition.Y);
 	int maxIndex = buffer->size.X * buffer->size.Y;
 	currentIndex += amount; // Amount can be negative
@@ -129,8 +145,38 @@ void TGBufAddLString(TGBuffer *buffer, char *str){
 	}
 }
 
-void TGBufAddLStringAttr(TGBuffer* buffer, char* str, TGAttributes attrs){
+void TGBufAddLStringAttr(TGBuffer *buffer, char *str, TGAttributes attrs){
 	int length = strlen(str);
+	int currentIndex = buffer->virtualCursorPosition.X + (buffer->size.X * buffer->virtualCursorPosition.Y);
+	int indexStart = currentIndex;
+	int maxIndex = buffer->size.X * buffer->size.Y;
+	while(currentIndex <= maxIndex && length > currentIndex - indexStart){
+		TGCharInfo info = { 0 };
+		info.attributes = attrs;
+		info.character = str[currentIndex - indexStart];
+		TGBufCell(buffer, buffer->virtualCursorPosition.X, buffer->virtualCursorPosition.Y, info);
+		TGBufCursorMove(buffer, 1); // Move the cursor "forwards" by one
+		currentIndex++;
+	}
+}
+
+void TGBufAddString(TGBuffer *buffer, wchar_t *str){
+	int length = wcslen(str);
+	int currentIndex = buffer->virtualCursorPosition.X + (buffer->size.X * buffer->virtualCursorPosition.Y);
+	int indexStart = currentIndex;
+	int maxIndex = buffer->size.X * buffer->size.Y;
+	while(currentIndex <= maxIndex && length > currentIndex - indexStart){
+		TGCharInfo info = { 0 };
+		info.attributes = buffer->currentAttributes;
+		info.character = str[currentIndex - indexStart];
+		TGBufCell(buffer, buffer->virtualCursorPosition.X, buffer->virtualCursorPosition.Y, info);
+		TGBufCursorMove(buffer, 1); // Move the cursor "forwards" by one
+		currentIndex++;
+	}
+}
+
+void TGBufAddStringAttr(TGBuffer *buffer, wchar_t *str, TGAttributes attrs){
+	int length = wcslen(str);
 	int currentIndex = buffer->virtualCursorPosition.X + (buffer->size.X * buffer->virtualCursorPosition.Y);
 	int indexStart = currentIndex;
 	int maxIndex = buffer->size.X * buffer->size.Y;
@@ -180,8 +226,13 @@ TGContext* TG() {
 	noecho();
 	mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, &TGPreviousInputMode);
 	getmaxyx(TGMainContext.screenBufferHandle, height, width);
+	setlocale(LC_ALL, ""); // Turn on UTF8
     #endif
 	TGMainContext.drawBuffer = TGBufCreate(width, height);
+	#ifndef _WIN32
+	delwin(TGMainContext.drawBuffer.systemDrawBuffer); // This is wasteful, but only occurs once.
+	TGMainContext.drawBuffer.systemDrawBuffer = stdscr;
+	#endif
 	return &TGMainContext;
 }
 
@@ -197,21 +248,12 @@ void TGUpdate() {
 	}; // Rect to draw to on destination
 	WriteConsoleOutput(
 		TGMainContext.screenBufferHandle,
-		TGMainContext.drawBuffer.windowsDrawBuffer,
+		TGMainContext.drawBuffer.systemDrawBuffer,
 		size,
 		pos,
 		&rect
 	);
     #else
-	int i = 0;
-	while(i < TGMainContext.drawBuffer.size.X * TGMainContext.drawBuffer.size.Y){
-		int x = i % TGMainContext.drawBuffer.size.X;
-		int y = (i - x) / TGMainContext.drawBuffer.size.X;
-		attron(TGMainContext.drawBuffer.buffer[i].attributes.attributes);
-		mvwaddch(TGMainContext.screenBufferHandle, y, x, TGMainContext.drawBuffer.buffer[i].character);
-		attroff(TGMainContext.drawBuffer.buffer[i].attributes.attributes);
-		i++;
-	}
     wrefresh(TGMainContext.screenBufferHandle);
     #endif
 }
@@ -279,7 +321,7 @@ TGInput TGGetInput() {
 		1,
 		&numberRead
 	);
-	if (inputRecord.EventType == KEY_EVENT) {
+	if (inputRecord.EventType == KEY_EVENT && inputRecord.Event.KeyEvent.bKeyDown) {
 		input.eventType = TG_EVENT_KEY;
 		int specialKey = TGIsSpecialKey(inputRecord.Event.KeyEvent.wVirtualKeyCode);
 		if (specialKey) {
@@ -385,22 +427,39 @@ void TGHandleResizeEvent(TGInput input) {
 			};
 			TGBufSize(&TGMainContext.drawBuffer, size.X, size.Y);
 			SetConsoleScreenBufferSize(TGMainContext.screenBufferHandle, size);
-			TGBufClear(&TGMainContext.drawBuffer);
 		}
 	}
 	#else
 		TGBufSize(&TGMainContext.drawBuffer, input.event.resizeEvent.newSize.X, input.event.resizeEvent.newSize.Y);
     #endif
+	TGBufClear(&TGMainContext.drawBuffer);
 }
 
-int TGTitle(const char *title) {
+void TGTitle(const char *title) {
     #ifdef _WIN32
-	return SetConsoleTitle(title);
+	SetConsoleTitle(title);
     #else
 	printf("\033]0;%s\007", title);
 	fflush(stdout);
-    return 1; // Don't know how to check if that worked. Just hope and pray?
     #endif
+}
+
+void TGSetCursorPosition(int x, int y){
+	#ifdef _WIN32
+	SetConsoleCursorPosition(TGMainContext.screenBufferHandle, (COORD){ x, y });
+	#else
+	move(y, x);
+	#endif
+}
+
+COORD TGGetCursorPosition(){
+	COORD position = { 0 };
+	#ifdef _WIN32
+
+	#else
+	getyx(TGMainContext.screenBufferHandle, position.Y, position.X);
+	#endif
+	return position;
 }
 
 void TGEnd(){

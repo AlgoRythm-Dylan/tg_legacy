@@ -4,7 +4,9 @@
 ## TOC
 
 * [What does TG do?](#what-does-tg-do)
+* [Building](#building)
 * [Getting Started](#getting-started)
+* [Drawing](#drawing)
 * [Reference](#reference)
 
 ## What does TG do?
@@ -20,6 +22,26 @@ You can:
 * Collect input in a standard way
 * Draw to the screen
 * Use colors
+
+## Building
+
+Building TG is rather simple. On Windows, just add `tg.h` and `tg.c` to your
+project. On Linux, do the same thing, and add the linker option `-lncursesw`.
+A makefile has been included as an example.
+
+This is a one-line bash script to compile a program with TG (Assuming
+you have a program called `yourprogram.c`):
+
+```bash
+gcc -o yourprogram tg.c tg.h yourprogram.c -lncursesw
+```
+
+And then, of course, run it with
+
+```bash
+sudo chmod +x yourprogram
+./yourprogram
+```
 
 ## Getting started
 
@@ -147,43 +169,105 @@ return 0;
 Of course, we need to clean up our mess after we're done. If you forget `TGEnd`, your
 console may behave unexpectedly. On Linux, use the `reset` command to fix this.
 
+## Drawing
+
+The current version of TG lacks lots of ease-of-use features for drawing, planned for
+the future. That being said, you already have the tools you need to do anything you
+want, you'll just need to implement your own drawing functionality if you want to
+easily do things like lines and rectangles.
+
+As for what is already implemented, it is important to understand the cursor system
+in TG. TG has two types of cursors: the actual cursor (provided by the terminal
+emulator) and virtual cursors. Each buffer has it's own virtual cursor, which does
+not display. A buffer's virtual cursor is where new characters are drawn by default.
+Every time you clear a buffer, the virtual cursor for that buffer is set to (0, 0).
+
+The system cursor DOES display (by default), and to control the system cursor, see
+the functions [TGSetCursorVisible](#tgsetcursorvisible), 
+[TGSetCursorPosition](#tgsetcursorposition) and
+[TGGetCursorPosition](#tggetcursorposition).
+
+The functions to work with a buffer's virtual cursor are 
+[TGBufCursorMove](#tgbufcursormove) and [TGBufCursorPosition](#tgbufcursorposition).
+These functions modify the curren position of a buffer's virtual cursor.
+If you would like to retrieve the current position of a buffer's virtual cursor,
+simply access the member variable `virtualCursorPosition`
+
 # Reference
 
 ## TOC
 
-* [Colors](#colors)
-* [COORD](#coord)
-* [TG](#tg-function)
-* [TG_VERSION](#tg_version)
-* [TG_WINDOWS_MODE](#tg_windows_mode)
-* [TGAttributes](#tgattributes)
-* [TGBufAddLString](#tgbufaddlstring)
-* [TGBufAddLStringAttr](#tgbufaddlstringattr)
-* [TGBufAttr](#tgbufattr)
-* [TGBufCell](#tgbufcell)
-* [TGBufClear](#tgbufclear)
-* [TGBufCopy](#tgbufcopy)
-* [TGBufCreate](#tgbufcreate)
-* [TGBufCursorMove](#tgbufcursormove)
-* [TGBufCursorPosition](#tgbufcursorposition)
-* [TGBuffer](#tgbuffer)
-* [TGBufFree](#tgbuffree)
-* [TGBufSize](#tgbufsize)
-* [TGCalculateAttrs](#tgcalculateattrs)
-* [TGCharInfo](#tgcharinfo)
-* [TGColor](#tgcolor)
-* [TGColorCreate](#tgcolorcreate)
-* [TGContext](#tgcontext)
-* [TGEnd](#tgend)
-* [TGGetInput](#tggetinput)
-* [TGHandleResizeEvent](#tghandleresizeevent)
-* [TGInput](#tginput)
-* [TGKeyEvent](#tgkeyevent)
-* [TGMouseEvent](#tgmouseevent)
-* [TGResizeEvent](#tgresizeevent)
-* [TGSetCursorVisible](#tgsetcursorvisible)
-* [TGTitle](#tgtitle)
-* [TGUpdate](#tgupdate)
+Jump to: [Color](#color-items) • [Buffer](#buffer-items) • 
+[Character Cell](#character-cells) • [General](#general-items) •
+[Input](#input-items)
+
+### Color Items
+
+| Color | Description | Type
+|---|---|---|
+| [Colors](#colors) | A list of colors | Constants |
+| [TGColor](#tgcolor) | Color struct | Struct |
+| [TGColorCreate](#tgcolorcreate) | Create a color (pair) | Function |
+
+### Buffer Items
+
+| Buffer | Description | Type 
+|---|---|---|
+| [TGBufAddLString](#tgbufaddlstring) | Add char* string | Function |
+| [TGBufAddLStringAttr](#tgbufaddlstringattr) | Add char* string with certain attributes | Function |
+| [TGBufAddString](#tgbufaddstring) | Add wchar_t* string | Function |
+| [TGBufAddStringAttr](#tgbufaddstringattr) | Add wchar_t* string with certain attributes | Function |
+| [TGBufAttr](#tgbufattr) | Change attributes for a cell | Function |
+| [TGBufCell](#tgbufcell) | Change a cell | Function |
+| [TGBufClear](#tgbufclear) | Clear a buffer | Function |
+| [TGBufCopy](#tgbufcopy) | Copy one buffer to another | Function |
+| [TGBufCreate](#tgbufcreate) | Create a new buffer | Function |
+| [TGBufCursorMove](#tgbufcursormove) | Move a buffer's virtual cursor | Function |
+| [TGBufCursorPosition](#tgbufcursorposition) | Set a buffer's virtual cursor position | Function |
+| [TGBuffer](#tgbuffer) | Buffer struct | Struct |
+| [TGBufFree](#tgbuffree) | Clean up a buffer | Function |
+| [TGBufSize](#tgbufsize) | Resize a buffer | Function |
+
+### Character Cells
+
+| Character Cells | Description | Type |
+|---|---|---|
+| [TGAttributes](#tgattributes) | Attributes structure | Struct |
+| [TGCalculateAttrs](#tgcalculateattrs) | Calculate system attributes | Function |
+| [TGCharInfo](#tgcharinfo) | Individual character cell structure | Struct |
+
+
+### General Items
+
+| General | Description | Type |
+|---|---|---|
+| [COORD](#coord) | X and Y coordinate structure | Struct |
+| [TG](#tg-function) | Init function | Function |
+| [TG_VERSION](#tg_version) | Current TG version | Constant |
+| [TG_WINDOWS_MODE](#tg_windows_mode) | `true` if running on Windows | Constant |
+| [TGContext](#tgcontext) | Mainly used internally | Struct |
+| [TGEnd](#tgend) | Exit TG mode | Function |
+| [TGSetCursorVisible](#tgsetcursorvisible) | Set system cursor visibility | Function |
+| [TGTitle](#tgtitle) | Set terminal title | Function |
+| [TGUpdate](#tgupdate) | Update the screen | Function |
+
+
+### Input Items
+
+| Input | Description | Type |
+|---|---|---|
+| [TGGetInput](#tggetinput) | Get one input record from the buffer | Function |
+| [TGHandleResizeEvent](#tghandleresizeevent) | Make TG system react to resize | Function |
+| [TGInput](#tginput) | An input record | Struct |
+| [TGKeyEvent](#tgkeyevent) | Fired for key events | Struct |
+| [TGMouseEvent](#tgmouseevent) | Fired for mouse events | Struct |
+| [TGResizeEvent](#tgresizeevent) | Fired for resize events | Struct |
+
+
+### *Needs Documentation* (Sorry, it can be boring sometimes!):
+
+* TGBufAddString
+* TGBufAddStringAttr
 
 ## Colors
 
@@ -272,6 +356,31 @@ Add a "legacy string" - one byte characters - at the current buffer position
 |------------|--------------|------------------------------|
 | Buffer     | TGBuffer*    | The buffer to draw to        |
 | str        | char*        | String to draw               |
+| attributes | TGAttributes | Attributes to use            |
+
+## TGBufAddString
+
+*function*
+
+Add a wide string at the current buffer position
+(`virtualCursorPosition`) with the current buffer attributes.
+
+| Argument   | Data Type    | Description                  |
+|------------|--------------|------------------------------|
+| Buffer     | TGBuffer*    | The buffer to draw to        |
+| str        | wchar_t*     | String to draw               |
+
+## TGBufAddStringAttr
+
+*function*
+
+Add wide string at the current buffer position
+(`virtualCursorPosition`) with the attributes passed to the function.
+
+| Argument   | Data Type    | Description                  |
+|------------|--------------|------------------------------|
+| Buffer     | TGBuffer*    | The buffer to draw to        |
+| str        | wchar_t*     | String to draw               |
 | attributes | TGAttributes | Attributes to use            |
 
 ## TGBufAttr

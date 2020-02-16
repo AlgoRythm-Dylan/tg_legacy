@@ -3,7 +3,9 @@
 #ifndef TG_H
 #define TG_H
 
-#define TG_VERSION "2.0.0"
+#define TG_VERSION "2.1.0"
+// 3600 is default # of cells for cmd.exe
+#define TG_DEFAULT_BUFFER_LENGTH 3600
 
 #define TG_BLACK 0
 #define TG_RED 1
@@ -15,6 +17,7 @@
 #define TG_WHITE 7
 
 #include <stdbool.h>
+#include <wchar.h>
 
 static int TGCurrentColorID = 1; // 0 is reserved in ncurses for default pair. This won't even be use in Windows
 
@@ -26,7 +29,7 @@ typedef struct {
 } TGAttributes;
 
 typedef struct {
-    unsigned int character;
+    wchar_t character;
     TGAttributes attributes;
 } TGCharInfo;
 
@@ -39,7 +42,7 @@ typedef struct {
 #ifdef _WIN32
 #include <Windows.h>
 #define TG_WINDOWS_MODE true
-
+typedef CHAR_INFO* TGSystemBuffer;
 #else
 #define TG_WINDOWS_MODE false
 
@@ -49,16 +52,16 @@ typedef struct {
 } COORD;
 
 #include <ncursesw/curses.h>
+#include <locale.h>
 typedef WINDOW* HANDLE; // Let's make this easy
+typedef WINDOW* TGSystemBuffer;
 #endif // Not Win32
 
 // A drawing buffer, for general purposes
 typedef struct {
 	COORD size;
 	unsigned int length;
-    #ifdef _WIN32
-    CHAR_INFO *windowsDrawBuffer;
-    #endif
+    TGSystemBuffer systemDrawBuffer;
     TGCharInfo *buffer;
     TGAttributes currentAttributes;
     COORD virtualCursorPosition;
@@ -124,7 +127,7 @@ typedef struct {
 } TGContext;
 
 TGBuffer TGBufCreate(int, int); // Function to allocate a drawing buffer
-TGBuffer TGBufCopy(TGBuffer*); // Deep copy one buffer to another
+//TGBuffer TGBufDuplicate(TGBuffer*); // Deep copy one buffer to another
 void TGBufSize(TGBuffer*, int, int); // Resize a draw buffer
 void TGBufClear(TGBuffer*); // Fill a buffer with blank cells
 void TGBufCell(TGBuffer*, int, int, TGCharInfo); // Draw to a single cell on the buffer
@@ -135,13 +138,17 @@ void TGBufCursorPosition(TGBuffer*, int, int);
 void TGBufCursorMove(TGBuffer*, int);
 void TGBufAddLString(TGBuffer*, char*); // Add legacy string
 void TGBufAddLStringAttr(TGBuffer*, char*, TGAttributes); // Add legacy string without using buffer current attrs
+void TGBufAddString(TGBuffer*, wchar_t*);
+void TGBufAddStringAttr(TGBuffer*, wchar_t*, TGAttributes);
 
 TGContext* TG(); // Initialization function, which returns a drawing context to the screen
 void TGUpdate(); // Displays what has been drawn
 void TGSetCursorVisible(bool);
 TGInput TGGetInput();
 void TGHandleResizeEvent(TGInput); // Resize is not handled automatically
-int TGTitle(const char*);
+void TGTitle(const char*);
+void TGSetCursorPosition(int, int);
+COORD TGGetCursorPosition();
 void TGEnd();
 
 int TGColorID();

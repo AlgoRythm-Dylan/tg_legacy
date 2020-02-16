@@ -1,0 +1,5 @@
+- Blit
+- Docs for TGBufAddString
+- Docs for TGBufAddStringAttr
+- Buffer efficient resizing
+- Default colors

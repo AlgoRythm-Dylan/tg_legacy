@@ -1,4 +1,41 @@
-VERSION 2.0.0
+== VERSION 2.1.0 ==
+
+Improved Unicode support
+    - TGCharInfo.character now uses wchar_t
+    - TG() now sets locale to "" on *nix
+    - Added TGBufAddString
+    - Added TGBufAddStringAttr
+
+Added physical (terminal emulator) cursor control functionality
+    - TGSetCursorPosition
+    - TGGetCursorPosition
+
+Organized main.md TOC by category
+
+Added READMORE folder to docs, for more detailed documentation
+
+Added TODO, for me.
+
+Improved rendering pipeline
+    - buffers now have a systemDrawBuffer, replacing the
+      windows-specific system buffer.
+    - Buffer resize no longer clears by default
+
+Temporarily removed and renamed TGBufCopy
+
+
+== VERSION 2.0.1 ==
+
+Fixed Windows key events firing twice
+
+Added build instructions to the docs
+
+Added README.md
+
+TGTitle now returns void, as there is no way to check success on Linux
+(This feature was left over from before cross-platform anyways)
+
+== VERSION 2.0.0 ==
 
 [!] Breaking changes to TGCharInfo
     - Merged UnicodeChar and AsciiChar into just TGCharInfo.character
