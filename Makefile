@@ -1,7 +1,7 @@
 CC=gcc
-CFLAGS=-I.
+CFLAGS=-D_GNU_SOURCE -I/usr/include/ncursesw
 ODIR=obj
-LIBS=-lncursesw
+LIBS=-lncursesw -ltinfo
 DEPS=tg.h
 
 _OBJ=tg.o tgtest.o

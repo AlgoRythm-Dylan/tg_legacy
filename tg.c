@@ -11,6 +11,7 @@ TGBuffer TGBufCreate(int width, int height) {
 	TGBuffer.systemDrawBuffer = newpad(height, width);
 	#endif
 	TGBuffer.virtualCursorPosition = (COORD) { 0, 0 };
+	TGBuffer.currentAttributes = (TGAttributes) { 0 };
 	TGBufSize(&TGBuffer, width, height);
 	return TGBuffer;
 }
@@ -59,7 +60,7 @@ void TGBufClear(TGBuffer *tgBuffer) {
 	while (i < limit) {
 		tgBuffer->buffer[i] = clearChar;
 		#ifdef _WIN32
-		tgBuffer->systemDrawBuffer[i] = (CHAR_INFO) { 0 };
+		tgBuffer->systemDrawBuffer[i] = (CHAR_INFO) { .Char.UnicodeChar = ' ' };
 		#endif
 		i++;
 	}
@@ -76,7 +77,7 @@ void TGBufCell(TGBuffer *tgBuffer, int x, int y, TGCharInfo character) {
 	tgBuffer->systemDrawBuffer[(tgBuffer->size.X * y) + x].Attributes = character.attributes.attributes;
 	#else
 	wattron(tgBuffer->systemDrawBuffer, character.attributes.attributes);
-	mvwaddch(tgBuffer->systemDrawBuffer, y, x, character.character);
+	mvwaddnwstr(tgBuffer->systemDrawBuffer, y, x, &character.character, 1);
 	#endif
 }
 
@@ -87,7 +88,9 @@ void TGBufAttr(TGBuffer *tgBuffer, int x, int y, TGAttributes attr) {
 	#ifdef _WIN32
 	tgBuffer->systemDrawBuffer[(tgBuffer->size.X * y) + x].Attributes = attr.attributes;
 	#else
-	mvwaddch(tgBuffer->systemDrawBuffer, y, x, tgBuffer->buffer[(tgBuffer->size.X * y) + x].character);
+	attron(attr.attributes);
+	mvwaddnwstr(tgBuffer->systemDrawBuffer, y, x,
+		&tgBuffer->buffer[(tgBuffer->size.X * y) + x].character, 1);
 	#endif
 }
 
@@ -210,12 +213,10 @@ TGContext* TG() {
 	SetConsoleActiveScreenBuffer(TGMainContext.screenBufferHandle);
 	// Update the buffer sizes
 	GetConsoleScreenBufferInfo(TGMainContext.screenBufferHandle, &info);
-	TGBufSize(&TGMainContext.drawBuffer, info.dwSize.X, info.dwSize.Y);
-	TGBufClear(&TGMainContext.drawBuffer);
 	// Set up a better input mode
 	GetConsoleMode(TGMainContext.inputHandle, &TGPreviousInputMode);
 	SetConsoleMode(TGMainContext.inputHandle, ENABLE_EXTENDED_FLAGS | ENABLE_MOUSE_INPUT | ENABLE_WINDOW_INPUT);
-    #else
+	#else
     TGMainContext.screenBufferHandle = initscr(); // Linux is beautiful
 	start_color();
 	nodelay(TGMainContext.screenBufferHandle, true);
@@ -233,6 +234,7 @@ TGContext* TG() {
 	delwin(TGMainContext.drawBuffer.systemDrawBuffer); // This is wasteful, but only occurs once.
 	TGMainContext.drawBuffer.systemDrawBuffer = stdscr;
 	#endif
+	TGBufClear(&TGMainContext.drawBuffer);
 	return &TGMainContext;
 }
 

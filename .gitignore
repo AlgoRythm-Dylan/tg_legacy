@@ -1,3 +1,5 @@
 tgtest
 obj
 obj/*
+*.o
+.vscode

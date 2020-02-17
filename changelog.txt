@@ -1,3 +1,6 @@
+== VERSION 2.1.1 ==
+    - Whoops, version 2.1.0 actually works now in both Linux and Windows
+
 == VERSION 2.1.0 ==
 
 Improved Unicode support
