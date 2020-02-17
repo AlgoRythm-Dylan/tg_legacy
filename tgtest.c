@@ -9,7 +9,7 @@ int main() {
 	context->drawBuffer.currentAttributes.color = defaultColor.id;
 	TGCalculateAttrs(&context->drawBuffer.currentAttributes);
 	
-	wchar_t *str = L"😀";
+	wchar_t *str = L"😀😍🤣😂😂😂😅😆😗";
 	TGSetCursorVisible(false);
 
 	while (true) {

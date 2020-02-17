@@ -3,7 +3,7 @@
 #ifndef TG_H
 #define TG_H
 
-#define TG_VERSION "2.1.0"
+#define TG_VERSION "2.1.1"
 // 3600 is default # of cells for cmd.exe
 #define TG_DEFAULT_BUFFER_LENGTH 3600
 
