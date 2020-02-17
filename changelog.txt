@@ -1,3 +1,7 @@
+== VERSION 2.1.2 ==
+   - TGBufAddStr and TGBufAddStrAttr now advance the cursor using
+     the width of the character rather than just assuming one cell
+
 == VERSION 2.1.1 ==
     - Whoops, version 2.1.0 actually works now in both Linux and Windows
 

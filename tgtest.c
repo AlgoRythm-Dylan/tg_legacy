@@ -9,7 +9,7 @@ int main() {
 	context->drawBuffer.currentAttributes.color = defaultColor.id;
 	TGCalculateAttrs(&context->drawBuffer.currentAttributes);
 	
-	wchar_t *str = L"😀😍🤣😂😂😂😅😆😗";
+	wchar_t *str = L"😀";
 	TGSetCursorVisible(false);
 
 	while (true) {
@@ -17,15 +17,16 @@ int main() {
 		TGBufClear(&context->drawBuffer);
 		TGBufAddString(&context->drawBuffer, str);
 
-		TGUpdate();
-
 		TGInput input = TGGetInput();
 		if (input.empty || input.eventType != TG_EVENT_KEY) continue;
 		if (!input.event.keyEvent.special && input.event.keyEvent.key == 'q') {
 			break;
 		}
 
+		TGUpdate();
+
 	}
 	TGEnd();
+
 	return 0;
 }

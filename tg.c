@@ -173,7 +173,7 @@ void TGBufAddString(TGBuffer *buffer, wchar_t *str){
 		info.attributes = buffer->currentAttributes;
 		info.character = str[currentIndex - indexStart];
 		TGBufCell(buffer, buffer->virtualCursorPosition.X, buffer->virtualCursorPosition.Y, info);
-		TGBufCursorMove(buffer, 1); // Move the cursor "forwards" by one
+		TGBufCursorMove(buffer, wcwidth(info.character)); // Move the cursor "forwards" by one
 		currentIndex++;
 	}
 }
@@ -188,7 +188,7 @@ void TGBufAddStringAttr(TGBuffer *buffer, wchar_t *str, TGAttributes attrs){
 		info.attributes = attrs;
 		info.character = str[currentIndex - indexStart];
 		TGBufCell(buffer, buffer->virtualCursorPosition.X, buffer->virtualCursorPosition.Y, info);
-		TGBufCursorMove(buffer, 1); // Move the cursor "forwards" by one
+		TGBufCursorMove(buffer, wcwidth(info.character)); // Move the cursor "forwards" by one
 		currentIndex++;
 	}
 }

@@ -3,7 +3,7 @@
 #ifndef TG_H
 #define TG_H
 
-#define TG_VERSION "2.1.1"
+#define TG_VERSION "2.1.2"
 // 3600 is default # of cells for cmd.exe
 #define TG_DEFAULT_BUFFER_LENGTH 3600
 
@@ -55,6 +55,11 @@ typedef struct {
 #include <locale.h>
 typedef WINDOW* HANDLE; // Let's make this easy
 typedef WINDOW* TGSystemBuffer;
+
+#ifndef _XOPEN_SOURCE
+#define _XOPEN_SOURCE
+#endif
+
 #endif // Not Win32
 
 // A drawing buffer, for general purposes
