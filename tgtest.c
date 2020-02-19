@@ -12,6 +12,8 @@ int main() {
 	wchar_t *str = L"😀";
 	TGSetCursorVisible(false);
 
+	TGTitle(L"TG Test 😀");
+
 	while (true) {
 
 		TGBufClear(&context->drawBuffer);

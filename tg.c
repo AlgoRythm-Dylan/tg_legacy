@@ -480,9 +480,18 @@ void TGHandleResizeEvent(TGInput input) {
 	TGBufClear(&TGMainContext.drawBuffer);
 }
 
-void TGTitle(const char *title) {
+void TGTitle(const wchar_t *title) {
     #ifdef _WIN32
 	SetConsoleTitle(title);
+    #else
+	wprintf(L"\033]0;%s\007", title);
+	fflush(stdout);
+    #endif
+}
+
+void TGLTitle(const char *title) {
+    #ifdef _WIN32
+	SetConsoleTitleA(title);
     #else
 	printf("\033]0;%s\007", title);
 	fflush(stdout);

@@ -250,7 +250,8 @@ Jump to: [Color](#color-items) • [Buffer](#buffer-items) •
 | [TGContext](#tgcontext) | Mainly used internally | Struct |
 | [TGEnd](#tgend) | Exit TG mode | Function |
 | [TGSetCursorVisible](#tgsetcursorvisible) | Set system cursor visibility | Function |
-| [TGTitle](#tgtitle) | Set terminal title | Function |
+| [TGTitle](#tgtitle) | Set terminal title with `wchar_t*` | Function |
+| [TGLTitle](#tgltitle) | Set terminal title with `char*` | Function |
 | [TGUpdate](#tgupdate) | Update the screen | Function |
 
 
@@ -758,6 +759,16 @@ permanent on all platforms, so call this once per render to be sure.
 | visible    | bool         | Visible if value is truthy   |
 
 ## TGTitle
+
+*function*
+
+Set the title of the console.
+
+| Argument   | Data Type    | Description                  |
+|------------|--------------|------------------------------|
+| title      | wchar_t*     | The new title of the console |
+
+## TGLTitle
 
 *function*
 

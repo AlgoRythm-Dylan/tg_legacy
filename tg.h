@@ -3,7 +3,7 @@
 #ifndef TG_H
 #define TG_H
 
-#define TG_VERSION "2.2.0"
+#define TG_VERSION "2.3.0"
 // 3600 is default # of cells for cmd.exe
 #define TG_DEFAULT_BUFFER_LENGTH 3600
 
@@ -169,7 +169,8 @@ void TGUpdate(); // Displays what has been drawn
 void TGSetCursorVisible(bool);
 TGInput TGGetInput();
 void TGHandleResizeEvent(TGInput); // Resize is not handled automatically
-void TGTitle(const char*);
+void TGTitle(const wchar_t*);
+void TGLTitle(const char*);
 void TGSetCursorPosition(int, int);
 COORD TGGetCursorPosition();
 void TGEnd();

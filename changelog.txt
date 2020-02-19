@@ -1,3 +1,6 @@
+== VERSION 2.3.0 ==
+    - Unicode title support
+
 == VERSION 2.2.0 ==
     - Default color support
     - Added list of supported color names, TG_COLOR_NAMES
