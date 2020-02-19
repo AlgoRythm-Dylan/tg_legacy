@@ -484,7 +484,7 @@ void TGTitle(const wchar_t *title) {
     #ifdef _WIN32
 	SetConsoleTitle(title);
     #else
-	wprintf(L"\033]0;%s\007", title);
+	wprintf(L"\033]0;%ls\007", title);
 	fflush(stdout);
     #endif
 }
