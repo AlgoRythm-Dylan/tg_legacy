@@ -6,7 +6,7 @@ as an afterthought.
 
 ![An image of a terminal](./docs/images/term.png)
 
-Programs are double-buffered, like normal graphical programs are, to ensure
+TG is double-buffered, like normal graphical programs are, to ensure
 quick rendering. Writing pixels to the screen is an expensive operation, so
 most graphics programs write to an off-screen buffer and then swap the
 off-screen buffer with the on-screen one, to only do one screen update per
