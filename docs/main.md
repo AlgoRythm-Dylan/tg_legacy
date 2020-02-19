@@ -569,7 +569,7 @@ Describes a color
 
 | Member     | Data Type      | Description                     |
 |------------|----------------|---------------------------------|
-| id         | unsigned int   | Unicode text                    |
+| id         | unsigned int   | Color ID                        |
 | foreground | unsigned short | Foreground color ID             |
 | background | unsigned short | Background color ID             |
 
@@ -586,7 +586,6 @@ frame, you'll run out very quickly.
 |------------|--------------|------------------------------|
 | Foreground | int          | Foreground color ID          |
 | Background | int          | Background color ID          |
-
 
 
 | Return Value | Data Type | Description        |
