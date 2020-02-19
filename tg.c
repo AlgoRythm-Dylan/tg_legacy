@@ -11,7 +11,7 @@ TGBuffer TGBufCreate(int width, int height) {
 	TGBuffer.systemDrawBuffer = newpad(height, width);
 	#endif
 	TGBuffer.virtualCursorPosition = (COORD) { 0, 0 };
-	TGBuffer.currentAttributes = (TGAttributes) { 0 };
+	TGBuffer.currentAttributes = (TGAttributes) { .color = TGDefaultColor.id };
 	TGBufSize(&TGBuffer, width, height);
 	return TGBuffer;
 }
@@ -173,7 +173,11 @@ void TGBufAddString(TGBuffer *buffer, wchar_t *str){
 		info.attributes = buffer->currentAttributes;
 		info.character = str[currentIndex - indexStart];
 		TGBufCell(buffer, buffer->virtualCursorPosition.X, buffer->virtualCursorPosition.Y, info);
+		#ifdef _WIN32
+		TGBufCursorMove(buffer, 1); // Move the cursor "forwards" by one
+		#else
 		TGBufCursorMove(buffer, wcwidth(info.character)); // Move the cursor "forwards" by one
+		#endif
 		currentIndex++;
 	}
 }
@@ -188,7 +192,11 @@ void TGBufAddStringAttr(TGBuffer *buffer, wchar_t *str, TGAttributes attrs){
 		info.attributes = attrs;
 		info.character = str[currentIndex - indexStart];
 		TGBufCell(buffer, buffer->virtualCursorPosition.X, buffer->virtualCursorPosition.Y, info);
+		#ifdef _WIN32
+		TGBufCursorMove(buffer, 1); // Move the cursor "forwards" by one
+		#else
 		TGBufCursorMove(buffer, wcwidth(info.character)); // Move the cursor "forwards" by one
+		#endif
 		currentIndex++;
 	}
 }
@@ -216,6 +224,40 @@ TGContext* TG() {
 	// Set up a better input mode
 	GetConsoleMode(TGMainContext.inputHandle, &TGPreviousInputMode);
 	SetConsoleMode(TGMainContext.inputHandle, ENABLE_EXTENDED_FLAGS | ENABLE_MOUSE_INPUT | ENABLE_WINDOW_INPUT);
+	// Default Color
+	TGDefaultColor.id = info.wAttributes;
+	// Extract foreground color
+	if ((TGDefaultColor.id & (FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE)) == (FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE))
+		TGDefaultColor.foreground = TG_WHITE;
+	else if ((TGDefaultColor.id & (FOREGROUND_RED | FOREGROUND_GREEN)) == (FOREGROUND_RED | FOREGROUND_GREEN)) 
+		TGDefaultColor.foreground = TG_YELLOW;
+	else if ((TGDefaultColor.id & (FOREGROUND_RED | FOREGROUND_BLUE)) == (FOREGROUND_RED | FOREGROUND_BLUE))
+		TGDefaultColor.foreground = TG_MAGENTA;
+	else if ((TGDefaultColor.id & (FOREGROUND_GREEN | FOREGROUND_BLUE)) == (FOREGROUND_GREEN | FOREGROUND_BLUE))
+		TGDefaultColor.foreground = TG_CYAN;
+	else if ((TGDefaultColor.id & FOREGROUND_RED) == FOREGROUND_RED)
+		TGDefaultColor.foreground = TG_RED;
+	else if ((TGDefaultColor.id & FOREGROUND_GREEN) == FOREGROUND_GREEN)
+		TGDefaultColor.foreground = TG_GREEN;
+	else if ((TGDefaultColor.id & FOREGROUND_BLUE) == FOREGROUND_BLUE)
+		TGDefaultColor.foreground = TG_BLUE;
+	else TGDefaultColor.foreground = TG_BLACK;
+	// Extract background color
+	if ((TGDefaultColor.id & (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE)) == (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE))
+		TGDefaultColor.background = TG_WHITE;
+	else if ((TGDefaultColor.id & (BACKGROUND_RED | BACKGROUND_GREEN)) == (BACKGROUND_RED | BACKGROUND_GREEN))
+		TGDefaultColor.background = TG_YELLOW;
+	else if ((TGDefaultColor.id & (BACKGROUND_RED | BACKGROUND_BLUE)) == (BACKGROUND_RED | BACKGROUND_BLUE))
+		TGDefaultColor.background = TG_MAGENTA;
+	else if ((TGDefaultColor.id & (BACKGROUND_GREEN | BACKGROUND_BLUE)) == (BACKGROUND_GREEN | BACKGROUND_BLUE))
+		TGDefaultColor.background = TG_CYAN;
+	else if ((TGDefaultColor.id & BACKGROUND_RED) == BACKGROUND_RED)
+		TGDefaultColor.background = TG_RED;
+	else if ((TGDefaultColor.id & BACKGROUND_GREEN) == BACKGROUND_GREEN)
+		TGDefaultColor.background = TG_GREEN;
+	else if ((TGDefaultColor.id & BACKGROUND_BLUE) == BACKGROUND_BLUE)
+		TGDefaultColor.background = TG_BLUE;
+	else TGDefaultColor.background = TG_BLACK;
 	#else
     TGMainContext.screenBufferHandle = initscr(); // Linux is beautiful
 	start_color();
@@ -228,6 +270,7 @@ TGContext* TG() {
 	mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, &TGPreviousInputMode);
 	getmaxyx(TGMainContext.screenBufferHandle, height, width);
 	setlocale(LC_ALL, ""); // Turn on UTF8
+	pair_content(0, &TGDefaultColor.foreground, &TGDefaultColor.background);
     #endif
 	TGMainContext.drawBuffer = TGBufCreate(width, height);
 	#ifndef _WIN32

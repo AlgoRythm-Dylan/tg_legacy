@@ -5,9 +5,9 @@
 int main() {
 
 	TGContext *context = TG();
-	TGColor defaultColor = TGColorCreate(TG_WHITE, TG_BLACK);
+	/*TGColor defaultColor = TGColorCreate(TG_WHITE, TG_BLACK);
 	context->drawBuffer.currentAttributes.color = defaultColor.id;
-	TGCalculateAttrs(&context->drawBuffer.currentAttributes);
+	TGCalculateAttrs(&context->drawBuffer.currentAttributes);*/
 	
 	wchar_t *str = L"😀";
 	TGSetCursorVisible(false);

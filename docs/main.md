@@ -208,6 +208,8 @@ Jump to: [Color](#color-items) • [Buffer](#buffer-items) •
 | [Colors](#colors) | A list of colors | Constants |
 | [TGColor](#tgcolor) | Color struct | Struct |
 | [TGColorCreate](#tgcolorcreate) | Create a color (pair) | Function |
+| [TGDefaultColor](#tgdefaultcolor) | The terminal's default color | Extern |
+| [TG_COLOR_NAMES](#tg_color_names) | A list of color names | Constant |
 
 ### Buffer Items
 
@@ -308,6 +310,26 @@ TG Starts it all. TG enters "TG mode" and returns a pointer to the main TGContex
 | Return Value | Data Type | Description        |
 |--------------|-----------|--------------------|
 | TGContext    | TGContext*| The main TG Context|
+
+## TG_COLOR_NAMES
+
+*constant*
+
+Can be used to convert a standard color (see [Colors](#colors)) to their English names
+in all caps. In order, they are:
+
+```c
+"BLACK"
+"RED"
+"GREEN"
+"YELLOW"
+"BLUE"
+"MAGENTA"
+"CYAN"
+"WHITE"
+```
+
+Therefore, `TG_COLOR_NAMES[TG_BLACK]` is `"BLACK"`
 
 ## TG_VERSION
 
@@ -585,6 +607,12 @@ the main drawing buffer and some other vital information
 | screenBufferHandle | HANDLE      | stdscr on Linux, CreateConsoleScreenBuffer on Windows |
 | inputHandle        | HANDLE      | Nothing on Linux, STD_INPUT_HANDLE on Windows |
 | drawBuffer         | TGBuffer    | The main draw buffer            |
+
+## TGDefaultColor
+
+*extern*
+
+A [TGColor](#tgcolor) structure describing the console's default colors
 
 ## TGEnd
 

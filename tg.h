@@ -3,7 +3,7 @@
 #ifndef TG_H
 #define TG_H
 
-#define TG_VERSION "2.1.2"
+#define TG_VERSION "2.2.0"
 // 3600 is default # of cells for cmd.exe
 #define TG_DEFAULT_BUFFER_LENGTH 3600
 
@@ -16,39 +16,55 @@
 #define TG_CYAN 6
 #define TG_WHITE 7
 
+const static char *TG_COLOR_NAMES[] = {
+	"BLACK",
+	"RED",
+	"GREEN",
+	"YELLOW",
+	"BLUE",
+	"MAGENTA",
+	"CYAN",
+	"WHITE"
+};
+
 #include <stdbool.h>
 #include <wchar.h>
 
 static int TGCurrentColorID = 1; // 0 is reserved in ncurses for default pair. This won't even be use in Windows
 
 typedef struct {
-    bool underlined;
-    bool bold;
-    unsigned short attributes;
-    unsigned int color;
+	bool underlined;
+	bool bold;
+	unsigned short attributes;
+	unsigned int color;
 } TGAttributes;
 
 typedef struct {
-    wchar_t character;
-    TGAttributes attributes;
+	wchar_t character;
+	TGAttributes attributes;
 } TGCharInfo;
 
 typedef struct {
-    unsigned int id;
-    unsigned short foreground, background;
-    bool foregroundBright, backgroundBright;
+	unsigned int id;
+	unsigned short foreground, background;
+	bool foregroundBright, backgroundBright;
 } TGColor;
+
+extern TGColor TGDefaultColor;
 
 #ifdef _WIN32
 #include <Windows.h>
 #define TG_WINDOWS_MODE true
 typedef CHAR_INFO* TGSystemBuffer;
+
+TGColor TGDefaultColor;
+
 #else
 #define TG_WINDOWS_MODE false
 
 // I will keep the COORD structure from Windows
 typedef struct {
-    int X, Y;
+	int X, Y;
 } COORD;
 
 #include <ncursesw/curses.h>
@@ -60,16 +76,18 @@ typedef WINDOW* TGSystemBuffer;
 #define _XOPEN_SOURCE
 #endif
 
+TGColor TGDefaultColor;
+
 #endif // Not Win32
 
 // A drawing buffer, for general purposes
 typedef struct {
 	COORD size;
 	unsigned int length;
-    TGSystemBuffer systemDrawBuffer;
-    TGCharInfo *buffer;
-    TGAttributes currentAttributes;
-    COORD virtualCursorPosition;
+	TGSystemBuffer systemDrawBuffer;
+	TGCharInfo *buffer;
+	TGAttributes currentAttributes;
+	COORD virtualCursorPosition;
 } TGBuffer;
 
 #define TG_KEY_UP 0
@@ -89,8 +107,8 @@ typedef struct {
 int TGIsSpecialKey(int);
 
 typedef struct {
-    unsigned int key;
-    bool ctrlDown, special;
+	unsigned int key;
+	bool ctrlDown, special;
 } TGKeyEvent;
 
 #define TG_MOUSE_LEFT 1
@@ -101,14 +119,14 @@ typedef struct {
 #define TG_MOUSE_MOVE 2
 
 typedef struct {
-    COORD position;
-    unsigned short button;
-    unsigned short action;
+	COORD position;
+	unsigned short button;
+	unsigned short action;
 } TGMouseEvent;
 
 typedef struct {
-    COORD oldSize;
-    COORD newSize;
+	COORD oldSize;
+	COORD newSize;
 } TGResizeEvent;
 
 #define TG_EVENT_KEY 1
@@ -116,13 +134,13 @@ typedef struct {
 #define TG_EVENT_RESIZE 4
 
 typedef struct {
-    short eventType;
-    bool empty;
-    union {
-        TGKeyEvent keyEvent;
-        TGMouseEvent mouseEvent;
-        TGResizeEvent resizeEvent;
-    } event;
+	short eventType;
+	bool empty;
+	union {
+		TGKeyEvent keyEvent;
+		TGMouseEvent mouseEvent;
+		TGResizeEvent resizeEvent;
+	} event;
 } TGInput;
 
 // Essentially a drawing context to the screen
@@ -159,7 +177,7 @@ void TGEnd();
 int TGColorID();
 TGColor TGColorCreate(int, int);
 
-static TGContext TGMainContext = {0};
+static TGContext TGMainContext = { 0 };
 static long TGPreviousInputMode;
 
 #endif // TG_H

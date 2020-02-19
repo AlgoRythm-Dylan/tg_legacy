@@ -1,6 +1,10 @@
+== VERSION 2.2.0 ==
+    - Default color support
+    - Added list of supported color names, TG_COLOR_NAMES
+
 == VERSION 2.1.2 ==
-   - TGBufAddStr and TGBufAddStrAttr now advance the cursor using
-     the width of the character rather than just assuming one cell
+    - TGBufAddStr and TGBufAddStrAttr now advance the cursor using
+      the width of the character rather than just assuming one cell
 
 == VERSION 2.1.1 ==
     - Whoops, version 2.1.0 actually works now in both Linux and Windows
@@ -29,7 +33,6 @@ Improved rendering pipeline
     - Buffer resize no longer clears by default
 
 Temporarily removed and renamed TGBufCopy
-
 
 == VERSION 2.0.1 ==
 
