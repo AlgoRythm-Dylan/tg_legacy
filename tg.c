@@ -2,6 +2,33 @@
 #include <string.h>
 #include <stdlib.h>
 
+bool TGRectsEqual(TGRect r1, TGRect r2){
+	return TGPointsEqual(r1.start, r2.start) == 0 && TGPointsEqual(r1.size, r2.size) == 0;
+}
+
+int TGRectsCmp(TGRect r1, TGRect r2){
+	int rect1Area, rect2Area;
+	rect1Area = r1.size.X * r1.size.Y;
+	rect2Area = r2.size.X * r2.size.Y;
+	if(rect1Area == rect2Area) return 0;
+	else if(rect1Area < rect2Area) return -1;
+	else return 1;
+}
+
+
+// NOTE: (0, 1) and (1, 0) technically equal. Use TGPointsEqual for strict comparison
+int TGPointCmp(TGPoint c1, TGPoint c2){
+	int difference = (c1.X + c1.Y) - (c2.X + c2.Y);
+	if(difference == 0) return 0; // Same distance from (-inf, -inf)
+	else if(difference < 0) return -1; // Point1 "smaller" (closer to (-inf, -inf))
+	else return 1; // Point2 "smaller"
+}
+
+// Strict comparison function, see note for TGPointCmp
+bool TGPointsEqual(TGPoint c1, TGPoint c2){
+	return c1.X == c2.X && c1.Y == c2.Y;
+}
+
 TGBuffer TGBufCreate(int width, int height) {
 	TGBuffer TGBuffer;
 	TGBuffer.buffer = NULL;
@@ -10,7 +37,7 @@ TGBuffer TGBufCreate(int width, int height) {
 	#else
 	TGBuffer.systemDrawBuffer = newpad(height, width);
 	#endif
-	TGBuffer.virtualCursorPosition = (COORD) { 0, 0 };
+	TGBuffer.virtualCursorPosition = (TGPoint) { 0, 0 };
 	TGBuffer.currentAttributes = (TGAttributes) { .color = TGDefaultColor.id };
 	TGBufSize(&TGBuffer, width, height);
 	return TGBuffer;
@@ -201,6 +228,29 @@ void TGBufAddStringAttr(TGBuffer *buffer, wchar_t *str, TGAttributes attrs){
 	}
 }
 
+// BLIT will copy one **system** buffer to another, but not the TG Buffers,
+// making the effect temporary. This is efficient for items that move
+// around the screen frequently
+void TGBufBlit(TGBuffer *source, TGBuffer *dest, TGPoint location){
+	#ifdef _WIN32
+	// Copy "rectangle" of source systemDrawBuffer to "rectangle" of destination draw buffer
+	int x, y;
+	for (y = location.Y; y < dest->size.Y && y < source->size.Y; y++) {
+		for (x = location.X; x < dest->size.X && x < source->size.X; x++) {
+			dest->systemDrawBuffer[x + (y * dest->size.X)] = source->systemDrawBuffer[x + (y * source->size.X)];
+		}
+	}
+	#else
+	copywin(source->systemDrawBuffer, dest->systemDrawBuffer, 0, 0, location.Y, location.X,
+		location.Y + (source->size.Y - 1), location.X + (source->size.X - 1), true);
+	#endif
+}
+
+void TGBufCopy(TGBuffer *source, TGBuffer *dest, TGPoint location){
+	
+}
+
+
 TGContext* TG() {
 	int width, height;
     #ifdef _WIN32
@@ -260,8 +310,9 @@ TGContext* TG() {
 	else TGDefaultColor.background = TG_BLACK;
 	#else
     TGMainContext.screenBufferHandle = initscr(); // Linux is beautiful
+	TGMainContext.inputHandle = newwin(0, 0, 1, 1);
 	start_color();
-	nodelay(TGMainContext.screenBufferHandle, true);
+	nodelay(TGMainContext.inputHandle, true);
 	mouseinterval(0);
 	keypad(stdscr, true);
 	use_default_colors();
@@ -283,8 +334,8 @@ TGContext* TG() {
 
 void TGUpdate() {
     #ifdef _WIN32
-	COORD size = { TGMainContext.drawBuffer.size.X, TGMainContext.drawBuffer.size.Y }; // Buffer size
-	COORD pos = { 0, 0 }; // Start of the buffer coord
+	TGPoint size = { TGMainContext.drawBuffer.size.X, TGMainContext.drawBuffer.size.Y }; // Buffer size
+	TGPoint pos = { 0, 0 }; // Start of the buffer TGPoint
 	SMALL_RECT rect = {
 		.Left = 0,
 		.Top = 0,
@@ -358,8 +409,14 @@ int TGIsSpecialKey(int keycode){
 TGInput TGGetInput() {
 	TGInput input = { 0 };
     #ifdef _WIN32
+	int numEvents;
+	GetNumberOfConsoleInputEvents(TGMainContext.inputHandle, &numEvents);
 	int numberRead;
 	INPUT_RECORD inputRecord;
+	if (numEvents == 0) {
+		input.empty = true;
+		return input;
+	}
 	ReadConsoleInput(
 		TGMainContext.inputHandle,
 		&inputRecord,
@@ -381,10 +438,10 @@ TGInput TGGetInput() {
 	}
 	else if (inputRecord.EventType == MOUSE_EVENT) {
 		input.eventType = TG_EVENT_MOUSE;
-		if(inputRecord.Event.MouseEvent.dwEventFlags & MOUSE_MOVED){
+		if (inputRecord.Event.MouseEvent.dwEventFlags & MOUSE_MOVED) {
 			input.event.mouseEvent.action = TG_MOUSE_MOVE;
 		}
-		else{
+		else {
 			input.event.mouseEvent.action = TG_MOUSE_CLICK;
 			switch (inputRecord.Event.MouseEvent.dwButtonState) {
 			case FROM_LEFT_1ST_BUTTON_PRESSED:
@@ -410,7 +467,7 @@ TGInput TGGetInput() {
 		input.empty = true; // Sometimes, there are events that need to be ignored
 	}
     #else
-	int ch = wgetch(TGMainContext.screenBufferHandle);
+	int ch = wgetch(TGMainContext.inputHandle);
 	if(ch == KEY_RESIZE){
 		input.eventType = TG_EVENT_RESIZE;
 		input.event.resizeEvent.oldSize = TGMainContext.drawBuffer.size;
@@ -439,6 +496,7 @@ TGInput TGGetInput() {
 	}
 	else if(ch == ERR){
 		input.empty = true;
+		input.last = true;
 	}
 	else{
 		input.eventType = TG_EVENT_KEY;
@@ -466,7 +524,7 @@ void TGHandleResizeEvent(TGInput input) {
 			// Size the buffer to the window
 			CONSOLE_SCREEN_BUFFER_INFO info;
 			GetConsoleScreenBufferInfo(TGMainContext.screenBufferHandle, &info);
-			COORD size = {
+			TGPoint size = {
 				info.srWindow.Right + 1,
 				info.srWindow.Bottom + 1
 			};
@@ -500,14 +558,14 @@ void TGLTitle(const char *title) {
 
 void TGSetCursorPosition(int x, int y){
 	#ifdef _WIN32
-	SetConsoleCursorPosition(TGMainContext.screenBufferHandle, (COORD){ x, y });
+	SetConsoleCursorPosition(TGMainContext.screenBufferHandle, (TGPoint){ x, y });
 	#else
 	move(y, x);
 	#endif
 }
 
-COORD TGGetCursorPosition(){
-	COORD position = { 0 };
+TGPoint TGGetCursorPosition(){
+	TGPoint position = { 0 };
 	#ifdef _WIN32
 
 	#else

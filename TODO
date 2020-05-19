@@ -1,4 +1,15 @@
-- Blit
+- Copying
+- Windows blit
+- TGRectCmp based on area
 - Buffer efficient resizing
 - DOCS
     - TGDefaultColor
+    - TGDefaultRect
+    - TGPoint
+    - TGBufBlit
+    - TGRect
+    - TGPointCmp
+    - TGPointsEqual
+- Implement newline and tab
+- Read input blocking mode
+- Re-work event system?

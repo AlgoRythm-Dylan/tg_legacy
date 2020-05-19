@@ -3,3 +3,4 @@ obj
 obj/*
 *.o
 .vscode
+__pycache__

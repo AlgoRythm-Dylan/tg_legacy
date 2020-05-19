@@ -1,5 +1,14 @@
 == VERSION 2.3.0 ==
     - Unicode title support
+    - New structure TGRect
+    - COORD is now aliased to TGPoint for naming consistency
+        - All functions use TGPoint now
+    - TGPointCmp for comparing points (based on distance from (-inf, -inf))
+    - TGPointsEqual for strict equality comparison
+        - TGPointCmp will say that (0, 1) and (1, 0) are the same, TGPointsEqual
+          will not
+    - Blit implementation (Buffers aren't useless anymore!)
+    - "Improved" makefile
 
 == VERSION 2.2.0 ==
     - Default color support

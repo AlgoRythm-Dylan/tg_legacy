@@ -1,0 +1,1 @@
+make -s && (./tgtest || (echo "Failure: Restoring terminal state"; sleep 5 ; reset && clear))

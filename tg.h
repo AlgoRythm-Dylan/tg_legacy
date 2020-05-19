@@ -67,7 +67,7 @@ typedef struct {
 	int X, Y;
 } COORD;
 
-#include <ncursesw/curses.h>
+#include <curses.h> // Modify makefile to point to the right curses.h
 #include <locale.h>
 typedef WINDOW* HANDLE; // Let's make this easy
 typedef WINDOW* TGSystemBuffer;
@@ -136,6 +136,7 @@ typedef struct {
 typedef struct {
 	short eventType;
 	bool empty;
+	bool last;
 	union {
 		TGKeyEvent keyEvent;
 		TGMouseEvent mouseEvent;
@@ -148,6 +149,19 @@ typedef struct {
 	HANDLE screenBufferHandle, inputHandle;
 	TGBuffer drawBuffer;        //  Needs to be TGBufFree'd
 } TGContext;
+
+typedef struct {
+	COORD start, size;
+} TGRect;
+
+typedef COORD TGPoint; // You can use this if you want consistent naming
+
+static TGRect TGDefaultRect = { .start = {-1, -1}, .size = {-1, -1}};
+
+int TGRectsCmp(TGRect, TGRect); // Compare area of rects
+bool TGRectsEqual(TGRect, TGRect); // See if two rects are equal
+int TGPointCmp(TGPoint, TGPoint); // Compare two points
+bool TGPointsEqual(TGPoint, TGPoint); // Strict equality check
 
 TGBuffer TGBufCreate(int, int); // Function to allocate a drawing buffer
 //TGBuffer TGBufDuplicate(TGBuffer*); // Deep copy one buffer to another
@@ -163,6 +177,10 @@ void TGBufAddLString(TGBuffer*, char*); // Add legacy string
 void TGBufAddLStringAttr(TGBuffer*, char*, TGAttributes); // Add legacy string without using buffer current attrs
 void TGBufAddString(TGBuffer*, wchar_t*);
 void TGBufAddStringAttr(TGBuffer*, wchar_t*, TGAttributes);
+void TGBufBlit(TGBuffer*, TGBuffer*, TGPoint); // Source, destination, destination location. Quicker than copy
+void TGBufCopy(TGBuffer*, TGBuffer*, TGPoint); // Source, destination, destination location
+void TGBufCopyRect(TGBuffer*, TGBuffer*, TGRect, TGRect); // Source, destination, source rect, destination rect 
+
 
 TGContext* TG(); // Initialization function, which returns a drawing context to the screen
 void TGUpdate(); // Displays what has been drawn
@@ -172,7 +190,7 @@ void TGHandleResizeEvent(TGInput); // Resize is not handled automatically
 void TGTitle(const wchar_t*);
 void TGLTitle(const char*);
 void TGSetCursorPosition(int, int);
-COORD TGGetCursorPosition();
+TGPoint TGGetCursorPosition();
 void TGEnd();
 
 int TGColorID();

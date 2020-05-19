@@ -1,21 +1,22 @@
 CC=gcc
-CFLAGS=-D_GNU_SOURCE -I/usr/include/ncursesw
+CFLAGS=-D_GNU_SOURCE
 ODIR=obj
 LIBS=-lncursesw -ltinfo
-DEPS=tg.h
-
-_OBJ=tg.o tgtest.o
-OBJ=$(patsubst %,$(ODIR)/%,$(_OBJ))
-
-$(ODIR)/%.o: %.c $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
-
-tgtest: $(OBJ)
-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
-
-.PHONY: clean
+DEPS=tg.h tgsys.h
+INC=-I/usr/include/ncursesw
 
 all: tgtest clean
 
+$(shell mkdir -p $(ODIR))
+
+_OBJ=tg.o tgsys.o tgtest.o
+OBJ=$(patsubst %,$(ODIR)/%,$(_OBJ))
+
+$(ODIR)/%.o: %.c $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS) $(INC)
+
+tgtest: $(OBJ)
+	$(CC) -o $@ $^ $(CFLAGS) $(INC) $(LIBS)
+
 clean:
-	rm $(ODIR)/*.o
+	$(shell rm -rf $(ODIR))
