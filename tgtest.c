@@ -7,7 +7,7 @@ int main() {
 
 	TGContext *context = TG();
 	
-	wchar_t *str = L"Hello world 😀";
+	wchar_t *str = L"Hello world";
 	TGSetCursorVisible(false);
 
 	TGTitle(L"TG Test 😀");

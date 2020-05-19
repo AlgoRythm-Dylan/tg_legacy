@@ -4,3 +4,5 @@ obj/*
 *.o
 .vscode
 __pycache__
+Debug/
+x64/
