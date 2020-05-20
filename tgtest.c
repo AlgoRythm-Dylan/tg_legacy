@@ -25,15 +25,21 @@ int main() {
 
 		TGBufClear(&context->drawBuffer);
 		TGBufBlit(&textBuf, &context->drawBuffer, (TGPoint) {5, 5});
-		TGBufAddString(&context->drawBuffer, str);
+		//TGBufAddString(&context->drawBuffer, str);
 
-		TGInput input = TGGetInput();
+		TGInput input;
 
-		if (!(input.empty || input.eventType != TG_EVENT_KEY) && !input.event.keyEvent.special){
-			if(input.event.keyEvent.key == L'q'){
-				running = false;
+		do {
+			input = TGGetInput();
+			if (input.empty) continue;
+			if (input.eventType == TG_EVENT_KEY) {
+				if (!input.event.keyEvent.special) {
+					if (input.event.keyEvent.key == 'q') {
+						running = false;
+					}
+				}
 			}
-		}
+		} while (!input.last);
 
 		TGUpdate();
 	}

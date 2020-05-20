@@ -1,5 +1,4 @@
 - Copying
-- Windows blit
 - TGRectCmp based on area
 - Buffer efficient resizing
 - DOCS
@@ -12,4 +11,3 @@
     - TGPointsEqual
 - Implement newline and tab
 - Read input blocking mode
-- Re-work event system?

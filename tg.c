@@ -235,9 +235,12 @@ void TGBufBlit(TGBuffer *source, TGBuffer *dest, TGPoint location){
 	#ifdef _WIN32
 	// Copy "rectangle" of source systemDrawBuffer to "rectangle" of destination draw buffer
 	int x, y;
-	for (y = location.Y; y < dest->size.Y && y < source->size.Y; y++) {
-		for (x = location.X; x < dest->size.X && x < source->size.X; x++) {
-			dest->systemDrawBuffer[x + (y * dest->size.X)] = source->systemDrawBuffer[x + (y * source->size.X)];
+	for (y = 0; y < dest->size.Y && y < source->size.Y; y++) {
+		for (x = 0; x < dest->size.X && x < source->size.X; x++) {
+			//dest->systemDrawBuffer[location.X + x + (location.Y + y * dest->size.X)] = 
+				//source->systemDrawBuffer[x + (y * source->size.X)];
+			dest->systemDrawBuffer[location.X + x + (dest->size.X * (location.Y + y))] =
+				source->systemDrawBuffer[x + (y * source->size.X)];
 		}
 	}
 	#else
@@ -415,7 +418,11 @@ TGInput TGGetInput() {
 	INPUT_RECORD inputRecord;
 	if (numEvents == 0) {
 		input.empty = true;
+		input.last = true;
 		return input;
+	}
+	if (numEvents == 1) {
+		input.last = true;
 	}
 	ReadConsoleInput(
 		TGMainContext.inputHandle,
