@@ -22,4 +22,8 @@ work with UTF-8 and emojis.
 
 TG is well-documented [here](docs/main.md)
 
-Note: If you see "Version x.x.x" as a commit message, please read the changelog for that version
+BRANCHES:
+
+* Master: Release branch
+* Latest: Most recent complete (But not necessarily stable) build
+* Live: Used to send code between my Windows and Linux machines, mostly
