@@ -1,4 +1,4 @@
-<!-- Generated 2020-05-20 01:12:06.562860 -->
+<!-- Generated 2020-05-25 17:38:20.613778 -->
 # TG
 *cross-platform advanced terminal control*
 ## TOC
@@ -174,7 +174,8 @@ buffers. This cuts out half (or more!) of the operations required to display som
 Jump to: [Color](#color-items) • [Buffer](#buffer-items) • 
 [Character Cell](#character-cells) • [General](#general-items) •
 [Input](#input-items)
-### Color Items
 |Item|Description|Type|
 |---|---|---|
 |[Colors](#colors)|A list of colors|Constants|
+## Colors
+*None*<generator.DocumentPartial object at 0x7f7f57fcf828>

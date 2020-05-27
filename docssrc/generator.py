@@ -1,5 +1,13 @@
+"""
+
+    This code has been certified Gluten Free by the
+    Department of Gluten Free Code. This code is in
+    compliance with Section 1 of the GFC outline.
+
+"""
 import sys
 import datetime
+import os
 
 class Document:
 
@@ -11,9 +19,16 @@ class Document:
         self.items.append(item)
 
     def render(self):
+        if type(self.output) == str:
+            self.output = open(self.output, "w+")
+        print(f"Rendering {os.path.abspath(self.output.name)}...")
         print(f"<!-- Generated {datetime.datetime.now()} -->", file=self.output)
         for item in self.items:
-            print(item.render(), file=self.output, end="")
+            if type(item) == str:
+                print(item, file=self.output, end="")
+            else:
+                print(item.render(), file=self.output, end="")
+        print(f"Rendered {os.path.abspath(self.output.name)}")
 
 class DocumentPartial:
 
@@ -51,3 +66,5 @@ class Table:
             content += f"|{'|'.join(row)}|\n"
         return content
         
+def to_md_link(name):
+    return name.replace(" ", "").lower()
