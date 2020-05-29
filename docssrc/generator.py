@@ -65,6 +65,11 @@ class Table:
         for row in self.rows:
             content += f"|{'|'.join(row)}|\n"
         return content
-        
+
+
+def newlines(amout=1):
+    return "\n"*amount
+
+
 def to_md_link(name):
     return name.replace(" ", "").lower()

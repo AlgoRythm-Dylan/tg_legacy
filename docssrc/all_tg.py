@@ -70,9 +70,10 @@ class DocCategoryItem:
             content += f"## {self.title}\n"
         else:
             content += f"## {self.name}\n"
-        content += f"*{self.description}*"
+        if self.description != None:
+            content += f"*{self.description}*\n"
         if self.pre_text != None:
-            if type(self.pre_text == str):
+            if type(self.pre_text) == str:
                 content += f"{self.pre_text}\n"
             else:
                 content += self.pre_text.render()
@@ -98,9 +99,17 @@ doc_item_colors = DocCategoryItem("Colors", None, "Constants")
 doc_item_colors.short_description = "A list of colors"
 doc_item_colors.pre_text = DocumentPartial("items/colors_pretext.part.md")
 
+doc_item_tgcolor = DocCategoryItem("TGColor", "Describes a color", "Struct")
+doc_item_tgcolor.short_description = "The color structure"
+doc_item_tgcolor.table.add(('id','unsigned int','Color ID'))
+doc_item_tgcolor.table.add(('Foreground','unsigned short','Foreground color ID'))
+doc_item_tgcolor.table.add(('Background','unsigned short','Backgorund color ID'))
+
 category_all.add(doc_item_colors)
+category_all.add(doc_item_tgcolor)
 
 category_colors.add(doc_item_colors)
+category_colors.add(doc_item_tgcolor)
 
 category_all.sort()
 category_colors.sort()
