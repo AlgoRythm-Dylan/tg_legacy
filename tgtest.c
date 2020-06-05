@@ -1,4 +1,5 @@
 #include "tg.h"
+#include "tgdraw.h"
 #include "tgsys.h"
 #include <stdio.h>
 #include <stdlib.h>

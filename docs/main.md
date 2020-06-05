@@ -1,4 +1,4 @@
-<!-- Generated 2020-05-25 17:38:20.613778 -->
+<!-- Generated 2020-05-30 17:59:59.861140 -->
 # TG
 *cross-platform advanced terminal control*
 ## TOC
@@ -177,5 +177,26 @@ Jump to: [Color](#color-items) • [Buffer](#buffer-items) •
 |Item|Description|Type|
 |---|---|---|
 |[Colors](#colors)|A list of colors|Constants|
+|[TGColor](#tgcolor)|The color structure|Struct|
 ## Colors
-*None*<generator.DocumentPartial object at 0x7f7f57fcf828>
+TG supports seven cross-platform colors. They are:
+
+```c
+TG_BLACK
+TG_RED
+TG_GREEN
+TG_YELLOW
+TG_BLUE
+TG_MAGENTA
+TG_CYAN
+TG_WHITE
+```
+
+They must be used with `TGCreateColor`
+## TGColor
+*Describes a color*
+|Member|Data Type|Description|
+|---|---|---|
+|id|unsigned int|Color ID|
+|Foreground|unsigned short|Foreground color ID|
+|Background|unsigned short|Backgorund color ID|
