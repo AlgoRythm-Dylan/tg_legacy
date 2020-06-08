@@ -4,10 +4,10 @@
 #include "tg.h"
 
 typedef struct {
-    TGAttributes fillAttrs, strokeAttrs, clearAttrs;
+    TGCharInfo fill, stroke, clear;
     wchar_t drawChar, clearChar;
     char drawLChar, clearLChar;
-    bool legacyMode, strokeDisabled;
+    bool strokeDisabled;
     float strokeWidth, cornerRadius;
 } TGDrawingContext;
 

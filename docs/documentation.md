@@ -1,4 +1,4 @@
-<!-- Generated 2020-05-30 17:59:59.861504 -->
+<!-- Generated 2020-06-07 15:52:50.989165 -->
 # Documentation
 
 This project has it's own documentation system. It's designed
@@ -9,7 +9,8 @@ and some markdown files split into parts.
 
 Jump to
 
-[The Document Class](#the-document-class) • [Partial Documents](#partial-documents)
+[The Document Class](#the-document-class) • [Partial Documents](#partial-documents) •
+[Reference Data](#the-reference-data)
 ## The Document Class
 
 The Document class is the main class for documentation.
@@ -107,3 +108,28 @@ doc.output.close()
 The intro and body may be specific to the `somefile.md` document,
 but if you wanted to have a footer shared by all of your
 documentation, the `footer.part.md` file could accomplish that.
+## The Reference Data
+
+One of the major reasons for this semi-automated documentation
+system is due to the labor of generating references, or
+a table of contents. It's repetitive work, and making changes
+can be annoying, as you need to alphabetize the table and
+update the actual reference - it's just something a machine
+would do better than a person.
+
+Therefore, all reference data is stored in some python modules.
+These modules start with `all_` and end with the name of the material
+they are describing.
+
+```
+all_tg      The reference material for TG
+all_docs    The reference material for the documentation system
+```
+
+These modules include items for generating both a table of contents
+and actual reference materials dynamically with automatic sorting.
+They use a few classes found in the `generator` module:
+
+* [Table](#table) (internally)
+* [DocCategory](#doccategory)
+* [DocCategoryItem](#doccategoryitem)

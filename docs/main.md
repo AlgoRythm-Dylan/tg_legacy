@@ -1,4 +1,4 @@
-<!-- Generated 2020-05-30 17:59:59.861140 -->
+<!-- Generated 2020-06-07 15:52:50.988837 -->
 # TG
 *cross-platform advanced terminal control*
 ## TOC
@@ -178,6 +178,7 @@ Jump to: [Color](#color-items) • [Buffer](#buffer-items) •
 |---|---|---|
 |[Colors](#colors)|A list of colors|Constants|
 |[TGColor](#tgcolor)|The color structure|Struct|
+|[TGColorCreate](#tgcolorcreate)|Create a color (pair)|Function|
 ## Colors
 TG supports seven cross-platform colors. They are:
 
@@ -200,3 +201,15 @@ They must be used with `TGCreateColor`
 |id|unsigned int|Color ID|
 |Foreground|unsigned short|Foreground color ID|
 |Background|unsigned short|Backgorund color ID|
+## TGColorCreate
+Create a color for a cell. Every color is described as a pair of colors.
+You should avoid calling this function multiple
+times for the same color. Linux terminals limit the amount of
+pairs you can make. If you make a new pair each time you render
+a frame, you’ll run out very quickly.
+|Usage|Item|Data Type|Description|
+|---|---|---|---|
+|Foreground|int|Foreground color ID|
+|Background|int|Background color ID|
+**Return Value**: `TGColor` struct
+
