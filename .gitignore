@@ -6,3 +6,4 @@ obj/*
 __pycache__
 Debug/
 x64/
+*pyc

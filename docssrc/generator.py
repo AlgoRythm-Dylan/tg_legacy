@@ -127,7 +127,7 @@ DocCategoryColumns = {
     "Constants": ('Name','Data Type', 'Description')
 }
 
-class DocCategoryItem:
+class DocItem:
 
     def __init__(self, name, description, item_type):
         self.name = name
