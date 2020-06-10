@@ -12,6 +12,7 @@ doc.add(DocumentPartial("generic/drawing.part.md"))
 doc.add(DocumentPartial("main/reference-toc.part.md"))
 
 doc.add(category_colors.toc(links=True))
+doc.add(category_buffer.toc(links=True))
 doc.add(category_all.render(include_toc=False))
 doc.add(category_buffer.render(include_toc=False))
 

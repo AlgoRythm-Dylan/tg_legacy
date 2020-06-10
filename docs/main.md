@@ -1,4 +1,4 @@
-<!-- Generated 2020-06-07 15:52:50.988837 -->
+<!-- Generated 2020-06-08 23:38:55.929186 -->
 # TG
 *cross-platform advanced terminal control*
 ## TOC
@@ -174,11 +174,23 @@ buffers. This cuts out half (or more!) of the operations required to display som
 Jump to: [Color](#color-items) • [Buffer](#buffer-items) • 
 [Character Cell](#character-cells) • [General](#general-items) •
 [Input](#input-items)
+## Color Items
 |Item|Description|Type|
 |---|---|---|
 |[Colors](#colors)|A list of colors|Constants|
 |[TGColor](#tgcolor)|The color structure|Struct|
 |[TGColorCreate](#tgcolorcreate)|Create a color (pair)|Function|
+|[TGDefaultColor](#tgdefaultcolor)|The terminal's default color|Extern|
+|[TG_COLOR_NAMES](#tg_color_names)|A list of color names|Constant|
+## Buffer Items
+|Item|Description|Type|
+|---|---|---|
+|[TGBufAddLString](#tgbufaddlstring)|Add char* string|Function|
+|[TGBufAddLStringAttr](#tgbufaddlstringattr)|Add char* string with certain attributes|Function|
+|[TGBufAddString](#tgbufaddstring)|Add wchar_t* string|Function|
+|[TGBufAddStringAttr](#tgbufaddstringattr)|Add wchar_t* string with certain attributes|Function|
+|[TGBufAttr](#tgbufattr)|Change attributes for a cell|Function|
+|[TGBufCell](#tgbufcell)|Set a cell's content|Function|
 ## Colors
 TG supports seven cross-platform colors. They are:
 
@@ -194,6 +206,48 @@ TG_WHITE
 ```
 
 They must be used with `TGCreateColor`
+## TGBufAddLString
+*Add a "legacy string" - one byte characters - at the current buffer position (`virtualCursorPosition`) with the current buffer attributes.*
+|Usage|Item|Data Type|Description|
+|---|---|---|---|
+|Buffer|TGBuffer*|The buffer to draw to|
+|str|char*|String to draw|
+## TGBufAddLStringAttr
+*Add a "legacy string" - one byte characters - at  the current buffer position (`virtualCursorPosition`) with the attributes passed to the function.*
+|Usage|Item|Data Type|Description|
+|---|---|---|---|
+|Buffer|TGBuffer*|The buffer to draw to|
+|str|char*|String to draw|
+|attributes|TGAttributes|Attributes to use|
+## TGBufAddString
+*Add a wide string at the current buffer position (virtualCursorPosition) with the current buffer attributes.*
+|Usage|Item|Data Type|Description|
+|---|---|---|---|
+|Buffer|TGBuffer*|The buffer to draw to|
+|str|wchar_t*|String to draw|
+## TGBufAddStringAttr
+*Add wide string at the current buffer position (virtualCursorPosition) with the attributes passed to the function.*
+|Usage|Item|Data Type|Description|
+|---|---|---|---|
+|Buffer|TGBuffer*|The buffer to draw to|
+|str|wchar_t*|String to draw|
+|attributes|TGAttributes|Attributes to use|
+## TGBufAttr
+*Set’s a buffer's attributes at a specific location*
+|Usage|Item|Data Type|Description|
+|---|---|---|---|
+|Buffer|TGBuffer*|The buffer to draw to|
+|x|int|X position of the cell to update|
+|y|int|Y position of the cell to update|
+|Attributes|TGAttribtues|Attributes to set|
+## TGBufCell
+*Set a cell's content*
+|Usage|Item|Data Type|Description|
+|---|---|---|---|
+|Buffer|TGBuffer*|The buffer to draw to|
+|x|int|X position of the cell to update|
+|y|int|Y position of the cell to update|
+|CharInfo|TGCharInfo|CharInfo to set|
 ## TGColor
 *Describes a color*
 |Member|Data Type|Description|
@@ -213,3 +267,62 @@ a frame, you’ll run out very quickly.
 |Background|int|Background color ID|
 **Return Value**: `TGColor` struct
 
+## TGDefaultColor
+*A TGColor structure describing the console's default colors*
+## TG_COLOR_NAMES
+Can be used to convert a standard color to their English names (in all caps). In order, they are:
+
+```c
+"BLACK"
+"RED"
+"GREEN"
+"YELLOW"
+"BLUE"
+"MAGENTA"
+"CYAN"
+"WHITE"
+```
+
+Therefore, `TG_COLOR_NAMES[TG_BLACK]` is `"BLACK"`
+## TGBufAddLString
+*Add a "legacy string" - one byte characters - at the current buffer position (`virtualCursorPosition`) with the current buffer attributes.*
+|Usage|Item|Data Type|Description|
+|---|---|---|---|
+|Buffer|TGBuffer*|The buffer to draw to|
+|str|char*|String to draw|
+## TGBufAddLStringAttr
+*Add a "legacy string" - one byte characters - at  the current buffer position (`virtualCursorPosition`) with the attributes passed to the function.*
+|Usage|Item|Data Type|Description|
+|---|---|---|---|
+|Buffer|TGBuffer*|The buffer to draw to|
+|str|char*|String to draw|
+|attributes|TGAttributes|Attributes to use|
+## TGBufAddString
+*Add a wide string at the current buffer position (virtualCursorPosition) with the current buffer attributes.*
+|Usage|Item|Data Type|Description|
+|---|---|---|---|
+|Buffer|TGBuffer*|The buffer to draw to|
+|str|wchar_t*|String to draw|
+## TGBufAddStringAttr
+*Add wide string at the current buffer position (virtualCursorPosition) with the attributes passed to the function.*
+|Usage|Item|Data Type|Description|
+|---|---|---|---|
+|Buffer|TGBuffer*|The buffer to draw to|
+|str|wchar_t*|String to draw|
+|attributes|TGAttributes|Attributes to use|
+## TGBufAttr
+*Set’s a buffer's attributes at a specific location*
+|Usage|Item|Data Type|Description|
+|---|---|---|---|
+|Buffer|TGBuffer*|The buffer to draw to|
+|x|int|X position of the cell to update|
+|y|int|Y position of the cell to update|
+|Attributes|TGAttribtues|Attributes to set|
+## TGBufCell
+*Set a cell's content*
+|Usage|Item|Data Type|Description|
+|---|---|---|---|
+|Buffer|TGBuffer*|The buffer to draw to|
+|x|int|X position of the cell to update|
+|y|int|Y position of the cell to update|
+|CharInfo|TGCharInfo|CharInfo to set|

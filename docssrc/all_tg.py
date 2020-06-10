@@ -26,7 +26,7 @@ doc_item_tgdefaultcolor.short_description = "The terminal's default color"
 
 doc_item_tgcolornames = DocItem("TG_COLOR_NAMES", None, "Constant")
 doc_item_tgcolornames.short_description = "A list of color names"
-doc_item_tgcolornames.pre_text = DocumentPartial("items/")
+doc_item_tgcolornames.pre_text = DocumentPartial("items/colornames_pretext.part.md")
 
 doc_item_tgbufaddlstring = DocItem("TGBufAddLString", ("Add a \"legacy string\" - one byte characters - at the " +
      "current buffer position (`virtualCursorPosition`) with the current buffer attributes."), "Function")

@@ -74,7 +74,7 @@ class Table:
         return content
 
 
-def newlines(amout=1):
+def newlines(amount=1):
     return "\n"*amount
 
 
@@ -98,7 +98,10 @@ class DocCategory:
         self.items.append(item)
 
     def toc(self, links=False):
-        content = f"|{'|'.join(generic_item_columns)}|\n"
+        content = ""
+        if self.title != None:
+            content += f"## {self.title}\n"
+        content += f"|{'|'.join(generic_item_columns)}|\n"
         content += f"|{'|'.join(['---']*3)}|\n"
         for item in self.items:
             description = "No Description"
