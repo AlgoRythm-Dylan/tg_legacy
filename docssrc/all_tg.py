@@ -115,6 +115,16 @@ doc_item_tgattributes.table.add(('underlined', 'bool', 'Text will be underlined 
 doc_item_tgattributes.table.add(('bold', 'bool', 'Text will be bold if `true`'))
 doc_item_tgattributes.table.add(('color', 'unsigned int', 'TG Color ID to be used'))
 
+doc_item_tgcalculateattrs = DocItem("TGCalculateAttrs", ("Called to convert an attribute \"description\" into "
++" actual system attributes. Must be called any time you modify a TGAttributes struct"), "Function")
+doc_item_tgcalculateattrs.short_description = "Calculate system attributes"
+doc_item_tgcalculateattrs.table.add(('Attribtues', 'TGAttribtues*', 'The attributes to calculate'))
+
+doc_item_tgcharinfo = DocItem("TGCharInfo", "An abstract description of a text cell, including color, character, and other attributes", "Struct")
+doc_item_tgcharinfo.short_description = "Individual character cell structure"
+doc_item_tgcharinfo.table.add(('character', 'unsigned int', 'text content of the cell'))
+doc_item_tgcharinfo.table.add(('attributes', 'TGAttributes', 'Text attributes struct'))
+
 category_all.add(doc_item_colors)
 category_all.add(doc_item_tgcolor)
 category_all.add(doc_item_tgcolorcreate)
@@ -134,6 +144,8 @@ category_all.add(doc_item_tgbuffer)
 category_all.add(doc_item_tgbuffree)
 category_all.add(doc_item_tgbufsize)
 category_all.add(doc_item_tgattributes)
+category_all.add(doc_item_tgcalculateattrs)
+category_all.add(doc_item_tgcharinfo)
 
 category_colors.add(doc_item_colors)
 category_colors.add(doc_item_tgcolor)
@@ -156,6 +168,8 @@ category_buffer.add(doc_item_tgbuffree)
 category_buffer.add(doc_item_tgbufsize)
 
 category_character.add(doc_item_tgattributes)
+category_character.add(doc_item_tgcalculateattrs)
+category_character.add(doc_item_tgcharinfo)
 
 category_all.sort()
 category_colors.sort()
