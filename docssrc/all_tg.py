@@ -3,6 +3,7 @@ from generator import *
 category_all = DocCategory()
 category_colors = DocCategory(title="Color Items")
 category_buffer = DocCategory(title="Buffer Items")
+category_character = DocCategory(title="Character Cells")
 
 doc_item_colors = DocItem("Colors", None, "Constants")
 doc_item_colors.short_description = "A list of colors"
@@ -108,6 +109,12 @@ doc_item_tgbufsize.table.add(('Buffer', 'TGBuffer*', 'The buffer to resize'))
 doc_item_tgbufsize.table.add(('width', 'int', 'New width of the buffer'))
 doc_item_tgbufsize.table.add(('height', 'int', 'New height of the buffer'))
 
+doc_item_tgattributes = DocItem("TGAttributes", "A structure to hold attributes, as listed below", "Struct")
+doc_item_tgattributes.short_description = "Attributes structure"
+doc_item_tgattributes.table.add(('underlined', 'bool', 'Text will be underlined if `true`'))
+doc_item_tgattributes.table.add(('bold', 'bool', 'Text will be bold if `true`'))
+doc_item_tgattributes.table.add(('color', 'unsigned int', 'TG Color ID to be used'))
+
 category_all.add(doc_item_colors)
 category_all.add(doc_item_tgcolor)
 category_all.add(doc_item_tgcolorcreate)
@@ -126,6 +133,7 @@ category_all.add(doc_item_tgbufcursorposition)
 category_all.add(doc_item_tgbuffer)
 category_all.add(doc_item_tgbuffree)
 category_all.add(doc_item_tgbufsize)
+category_all.add(doc_item_tgattributes)
 
 category_colors.add(doc_item_colors)
 category_colors.add(doc_item_tgcolor)
@@ -146,6 +154,8 @@ category_buffer.add(doc_item_tgbufcursorposition)
 category_buffer.add(doc_item_tgbuffer)
 category_buffer.add(doc_item_tgbuffree)
 category_buffer.add(doc_item_tgbufsize)
+
+category_character.add(doc_item_tgattributes)
 
 category_all.sort()
 category_colors.sort()

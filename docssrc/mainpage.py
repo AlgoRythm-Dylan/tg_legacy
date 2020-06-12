@@ -13,9 +13,11 @@ doc.add(DocumentPartial("main/reference-toc.part.md"))
 
 doc.add(category_colors.toc(links=True))
 doc.add(category_buffer.toc(links=True))
+doc.add(category_character.toc(links=True))
+
+doc.add("## All reference items (Alphabetical)\n")
+
 doc.add(category_all.render(include_toc=False))
-doc.add(category_buffer.render(include_toc=False))
 
 if __name__ == "__main__":
     doc.render()
-    doc.output.close()

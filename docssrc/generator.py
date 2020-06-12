@@ -26,14 +26,17 @@ class Document:
         try:
             if type(self.output) == str:
                 self.output = open(self.output, "w+")
-            lg("INFO", f" Rendering {os.path.abspath(self.output.name)}...")
+            abs_path = os.path.abspath(self.output.name)
+            lg("INFO", f" Rendering {abs_path}...")
             print(f"<!-- Generated {datetime.datetime.now()} -->", file=self.output)
             for item in self.items:
                 if type(item) == str:
                     print(item, file=self.output, end="")
                 else:
                     print(item.render(), file=self.output, end="")
-            lg("DONE", f" Rendered {os.path.abspath(self.output.name)}")
+            self.output.close()
+            file_size = os.stat(abs_path).st_size
+            lg("DONE", f" Rendered {abs_path} [{file_size}b]")
         except Exception as e:
             lg("ERROR", f" {str(e)}")
 
