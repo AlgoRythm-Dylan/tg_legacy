@@ -4,6 +4,7 @@ category_all = DocCategory()
 category_colors = DocCategory(title="Color Items")
 category_buffer = DocCategory(title="Buffer Items")
 category_character = DocCategory(title="Character Cells")
+category_general = DocCategory(title="General Items")
 
 doc_item_colors = DocItem("Colors", None, "Constants")
 doc_item_colors.short_description = "A list of colors"
@@ -125,6 +126,20 @@ doc_item_tgcharinfo.short_description = "Individual character cell structure"
 doc_item_tgcharinfo.table.add(('character', 'unsigned int', 'text content of the cell'))
 doc_item_tgcharinfo.table.add(('attributes', 'TGAttributes', 'Text attributes struct'))
 
+doc_item_coord = DocItem("COORD", ("COORD is a structure describing a position in two-dimensional space." +
+" It comes from the Windows standard library, and has only X and Y integer values. They are uppercase for" +
+" compatibility with Windows."), "Struct")
+doc_item_coord.short_description = "X and Y coordinate structure"
+doc_item_coord.table.add(('X', 'int', 'X coordinate'))
+doc_item_coord.table.add(('Y', 'int', 'Y coordinate'))
+
+doc_item_tg = DocItem("TG", "TG Starts it all. TG enters \"TG mode\" and returns a pointer to the main TGContext", "Function")
+doc_item_tg.short_description = "Init function"
+doc_item_tg.post_text = "**Return value**: The main `TGContext`\n"
+
+doc_item_tgversion = DocItem("TGVersion", "The current version of TG you are using", "Constant")
+doc_item_tgversion.short_description = "Current TG version"
+
 category_all.add(doc_item_colors)
 category_all.add(doc_item_tgcolor)
 category_all.add(doc_item_tgcolorcreate)
@@ -146,6 +161,9 @@ category_all.add(doc_item_tgbufsize)
 category_all.add(doc_item_tgattributes)
 category_all.add(doc_item_tgcalculateattrs)
 category_all.add(doc_item_tgcharinfo)
+category_all.add(doc_item_coord)
+category_all.add(doc_item_tg)
+category_all.add(doc_item_tgversion)
 
 category_colors.add(doc_item_colors)
 category_colors.add(doc_item_tgcolor)
@@ -170,6 +188,10 @@ category_buffer.add(doc_item_tgbufsize)
 category_character.add(doc_item_tgattributes)
 category_character.add(doc_item_tgcalculateattrs)
 category_character.add(doc_item_tgcharinfo)
+
+category_general.add(doc_item_coord)
+category_general.add(doc_item_tg)
+category_general.add(doc_item_tgversion)
 
 category_all.sort()
 category_colors.sort()

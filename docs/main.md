@@ -1,6 +1,7 @@
-<!-- Generated 2020-06-08 23:38:55.929186 -->
+<!-- Generated 2020-06-14 19:05:03.068347 -->
 # TG
-*cross-platform advanced terminal control*
+*The Terminal Graphics library, which provides*
+*cross-platform, standardized advanced terminal control*
 ## TOC
 
 * [What does TG do?](#what-does-tg-do)
@@ -191,7 +192,37 @@ Jump to: [Color](#color-items) • [Buffer](#buffer-items) •
 |[TGBufAddStringAttr](#tgbufaddstringattr)|Add wchar_t* string with certain attributes|Function|
 |[TGBufAttr](#tgbufattr)|Change attributes for a cell|Function|
 |[TGBufCell](#tgbufcell)|Set a cell's content|Function|
+|[TGBufClear](#tgbufclear)|Clear a buffer|Function|
+|[TGBufCreate](#tgbufcreate)|Create a new buffer|Function|
+|[TGBufCursorMove](#tgbufcursormove)|Move a buffer's virtual cursor|Function|
+|[TGBufCursorPosition](#tgbufcursorposition)|Set a buffer's virtual cursor position|Function|
+|[TGBufFree](#tgbuffree)|Clean up a buffer|Function|
+|[TGBufSize](#tgbufsize)|Resize a buffer|Function|
+|[TGBuffer](#tgbuffer)|Buffer struct|Struct|
+## Character Cells
+|Item|Description|Type|
+|---|---|---|
+|[TGAttributes](#tgattributes)|Attributes structure|Struct|
+|[TGCalculateAttrs](#tgcalculateattrs)|Calculate system attributes|Function|
+|[TGCharInfo](#tgcharinfo)|Individual character cell structure|Struct|
+## General Items
+|Item|Description|Type|
+|---|---|---|
+|[COORD](#coord)|X and Y coordinate structure|Struct|
+|[TG](#tg)|Init function|Function|
+|[TGVersion](#tgversion)|Current TG version|Constant|
+## All reference items (Alphabetical)
+## COORD
+*Struct*
+
+COORD is a structure describing a position in two-dimensional space. It comes from the Windows standard library, and has only X and Y integer values. They are uppercase for compatibility with Windows.
+|Member|Data Type|Description|
+|---|---|---|
+|X|int|X coordinate|
+|Y|int|Y coordinate|
 ## Colors
+*Constants*
+
 TG supports seven cross-platform colors. They are:
 
 ```c
@@ -206,34 +237,59 @@ TG_WHITE
 ```
 
 They must be used with `TGCreateColor`
+## TG
+*Function*
+
+TG Starts it all. TG enters "TG mode" and returns a pointer to the main TGContext
+**Return value**: The main `TGContext`
+
+## TGAttributes
+*Struct*
+
+A structure to hold attributes, as listed below
+|Member|Data Type|Description|
+|---|---|---|
+|underlined|bool|Text will be underlined if `true`|
+|bold|bool|Text will be bold if `true`|
+|color|unsigned int|TG Color ID to be used|
 ## TGBufAddLString
-*Add a "legacy string" - one byte characters - at the current buffer position (`virtualCursorPosition`) with the current buffer attributes.*
+*Function*
+
+Add a "legacy string" - one byte characters - at the current buffer position (`virtualCursorPosition`) with the current buffer attributes.
 |Usage|Item|Data Type|Description|
 |---|---|---|---|
 |Buffer|TGBuffer*|The buffer to draw to|
 |str|char*|String to draw|
 ## TGBufAddLStringAttr
-*Add a "legacy string" - one byte characters - at  the current buffer position (`virtualCursorPosition`) with the attributes passed to the function.*
+*Function*
+
+Add a "legacy string" - one byte characters - at  the current buffer position (`virtualCursorPosition`) with the attributes passed to the function.
 |Usage|Item|Data Type|Description|
 |---|---|---|---|
 |Buffer|TGBuffer*|The buffer to draw to|
 |str|char*|String to draw|
 |attributes|TGAttributes|Attributes to use|
 ## TGBufAddString
-*Add a wide string at the current buffer position (virtualCursorPosition) with the current buffer attributes.*
+*Function*
+
+Add a wide string at the current buffer position (virtualCursorPosition) with the current buffer attributes.
 |Usage|Item|Data Type|Description|
 |---|---|---|---|
 |Buffer|TGBuffer*|The buffer to draw to|
 |str|wchar_t*|String to draw|
 ## TGBufAddStringAttr
-*Add wide string at the current buffer position (virtualCursorPosition) with the attributes passed to the function.*
+*Function*
+
+Add wide string at the current buffer position (virtualCursorPosition) with the attributes passed to the function.
 |Usage|Item|Data Type|Description|
 |---|---|---|---|
 |Buffer|TGBuffer*|The buffer to draw to|
 |str|wchar_t*|String to draw|
 |attributes|TGAttributes|Attributes to use|
 ## TGBufAttr
-*Set’s a buffer's attributes at a specific location*
+*Function*
+
+Set’s a buffer's attributes at a specific location
 |Usage|Item|Data Type|Description|
 |---|---|---|---|
 |Buffer|TGBuffer*|The buffer to draw to|
@@ -241,21 +297,103 @@ They must be used with `TGCreateColor`
 |y|int|Y position of the cell to update|
 |Attributes|TGAttribtues|Attributes to set|
 ## TGBufCell
-*Set a cell's content*
+*Function*
+
+Set a cell's content
 |Usage|Item|Data Type|Description|
 |---|---|---|---|
 |Buffer|TGBuffer*|The buffer to draw to|
 |x|int|X position of the cell to update|
 |y|int|Y position of the cell to update|
 |CharInfo|TGCharInfo|CharInfo to set|
+## TGBufClear
+*Function*
+
+Clear a buffer and set it's virtual cursor position to (0, 0)
+|Usage|Item|Data Type|Description|
+|---|---|---|---|
+|Buffer|TGBuffer*|The buffer to clear|
+## TGBufCreate
+*Function*
+
+Create a new buffer
+|Usage|Item|Data Type|Description|
+|---|---|---|---|
+|width|int|Width of new buffer|
+|height|int|Height of new buffer|
+**Return value**: A new `TGBuffer` struct
+
+## TGBufCursorMove
+*Function*
+
+Move the cursor right by some amount. Negative values acceptable to go left. Will not loop back around when it reaches the end of the buffer (or the beginning).
+|Usage|Item|Data Type|Description|
+|---|---|---|---|
+|Buffer|TGBuffer*|The buffer to alter|
+|amount|int|How many cells to move the cursor|
+## TGBufCursorPosition
+*Function*
+
+Set the virtual cursor position of a buffer
+|Usage|Item|Data Type|Description|
+|---|---|---|---|
+|Buffer|TGBuffer*|The buffer to alter|
+|x|int|X dimension of position|
+|y|int|Y dimension of position|
+## TGBufFree
+*Function*
+
+Free resources allocated to a buffer
+|Usage|Item|Data Type|Description|
+|---|---|---|---|
+|Buffer|TGBuffer*|The buffer to free|
+## TGBufSize
+*Function*
+
+Resize a buffer
+|Usage|Item|Data Type|Description|
+|---|---|---|---|
+|Buffer|TGBuffer*|The buffer to resize|
+|width|int|New width of the buffer|
+|height|int|New height of the buffer|
+## TGBuffer
+*Struct*
+
+A buffer structure holding `TGCharInfo` types
+|Member|Data Type|Description|
+|---|---|---|
+|size|COORD|Dimensions of the buffer|
+|buffer|TGCharInfo*|Buffer data|
+|length|int|Buffer size|
+|currentAttributes|TGAttributes|Default attributes to be used|
+|virtualCursorPosition|COORD|Where new characters will be added|
+## TGCalculateAttrs
+*Function*
+
+Called to convert an attribute "description" into  actual system attributes. Must be called any time you modify a TGAttributes struct
+|Usage|Item|Data Type|Description|
+|---|---|---|---|
+|Attribtues|TGAttribtues*|The attributes to calculate|
+## TGCharInfo
+*Struct*
+
+An abstract description of a text cell, including color, character, and other attributes
+|Member|Data Type|Description|
+|---|---|---|
+|character|unsigned int|text content of the cell|
+|attributes|TGAttributes|Text attributes struct|
 ## TGColor
-*Describes a color*
+*Struct*
+
+Describes a color
 |Member|Data Type|Description|
 |---|---|---|
 |id|unsigned int|Color ID|
 |Foreground|unsigned short|Foreground color ID|
 |Background|unsigned short|Backgorund color ID|
 ## TGColorCreate
+*Function*
+
 Create a color for a cell. Every color is described as a pair of colors.
 You should avoid calling this function multiple
 times for the same color. Linux terminals limit the amount of
@@ -268,8 +406,16 @@ a frame, you’ll run out very quickly.
 **Return Value**: `TGColor` struct
 
 ## TGDefaultColor
-*A TGColor structure describing the console's default colors*
+*Extern*
+
+A TGColor structure describing the console's default colors
+## TGVersion
+*Constant*
+
+The current version of TG you are using
 ## TG_COLOR_NAMES
+*Constant*
+
 Can be used to convert a standard color to their English names (in all caps). In order, they are:
 
 ```c
@@ -284,45 +430,3 @@ Can be used to convert a standard color to their English names (in all caps). In
 ```
 
 Therefore, `TG_COLOR_NAMES[TG_BLACK]` is `"BLACK"`
-## TGBufAddLString
-*Add a "legacy string" - one byte characters - at the current buffer position (`virtualCursorPosition`) with the current buffer attributes.*
-|Usage|Item|Data Type|Description|
-|---|---|---|---|
-|Buffer|TGBuffer*|The buffer to draw to|
-|str|char*|String to draw|
-## TGBufAddLStringAttr
-*Add a "legacy string" - one byte characters - at  the current buffer position (`virtualCursorPosition`) with the attributes passed to the function.*
-|Usage|Item|Data Type|Description|
-|---|---|---|---|
-|Buffer|TGBuffer*|The buffer to draw to|
-|str|char*|String to draw|
-|attributes|TGAttributes|Attributes to use|
-## TGBufAddString
-*Add a wide string at the current buffer position (virtualCursorPosition) with the current buffer attributes.*
-|Usage|Item|Data Type|Description|
-|---|---|---|---|
-|Buffer|TGBuffer*|The buffer to draw to|
-|str|wchar_t*|String to draw|
-## TGBufAddStringAttr
-*Add wide string at the current buffer position (virtualCursorPosition) with the attributes passed to the function.*
-|Usage|Item|Data Type|Description|
-|---|---|---|---|
-|Buffer|TGBuffer*|The buffer to draw to|
-|str|wchar_t*|String to draw|
-|attributes|TGAttributes|Attributes to use|
-## TGBufAttr
-*Set’s a buffer's attributes at a specific location*
-|Usage|Item|Data Type|Description|
-|---|---|---|---|
-|Buffer|TGBuffer*|The buffer to draw to|
-|x|int|X position of the cell to update|
-|y|int|Y position of the cell to update|
-|Attributes|TGAttribtues|Attributes to set|
-## TGBufCell
-*Set a cell's content*
-|Usage|Item|Data Type|Description|
-|---|---|---|---|
-|Buffer|TGBuffer*|The buffer to draw to|
-|x|int|X position of the cell to update|
-|y|int|Y position of the cell to update|
-|CharInfo|TGCharInfo|CharInfo to set|

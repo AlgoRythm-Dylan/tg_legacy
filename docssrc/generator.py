@@ -152,8 +152,9 @@ class DocItem:
             content += f"## {self.title}\n"
         else:
             content += f"## {self.name}\n"
+        content += f"*{self.item_type}*\n\n"
         if self.description != None:
-            content += f"*{self.description}*\n"
+            content += f"{self.description}\n"
         if self.pre_text != None:
             if type(self.pre_text) == str:
                 content += f"{self.pre_text}\n"

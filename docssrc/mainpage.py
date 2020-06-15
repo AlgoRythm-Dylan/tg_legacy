@@ -14,6 +14,7 @@ doc.add(DocumentPartial("main/reference-toc.part.md"))
 doc.add(category_colors.toc(links=True))
 doc.add(category_buffer.toc(links=True))
 doc.add(category_character.toc(links=True))
+doc.add(category_general.toc(links=True))
 
 doc.add("## All reference items (Alphabetical)\n")
 
