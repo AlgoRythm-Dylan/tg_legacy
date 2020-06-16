@@ -140,6 +140,15 @@ doc_item_tg.post_text = "**Return value**: The main `TGContext`\n"
 doc_item_tgversion = DocItem("TGVersion", "The current version of TG you are using", "Constant")
 doc_item_tgversion.short_description = "Current TG version"
 
+doc_item_tgwindowsmode = DocItem("TG_WINDOWS_MODE", "Helpful boolean to tell if you're using the Windows version of TG or not.", "Constant")
+doc_item_tgwindowsmode.short_description = "`true` if running on Windows"
+
+doc_item_tgcontext = DocItem("TGContext", "In normal operation, there should only be one context. This structure holds the main drawing buffer and some other vital information", "Struct")
+doc_item_tgcontext.short_description = "Mainly used internally"
+doc_item_tgcontext.table.add(('screenBufferHandle', '(See notes)', 'Pointer to system output buffer'))
+doc_item_tgcontext.table.add(('inputHandle', '(See notes)', 'Pointer to system input buffer'))
+doc_item_tgcontext.table.add(('drawBuffer', 'TGBuffer', 'The main draw buffer'))
+
 category_all.add(doc_item_colors)
 category_all.add(doc_item_tgcolor)
 category_all.add(doc_item_tgcolorcreate)
@@ -164,6 +173,8 @@ category_all.add(doc_item_tgcharinfo)
 category_all.add(doc_item_coord)
 category_all.add(doc_item_tg)
 category_all.add(doc_item_tgversion)
+category_all.add(doc_item_tgwindowsmode)
+category_all.add(doc_item_tgcontext)
 
 category_colors.add(doc_item_colors)
 category_colors.add(doc_item_tgcolor)
@@ -192,6 +203,8 @@ category_character.add(doc_item_tgcharinfo)
 category_general.add(doc_item_coord)
 category_general.add(doc_item_tg)
 category_general.add(doc_item_tgversion)
+category_general.add(doc_item_tgwindowsmode)
+category_general.add(doc_item_tgcontext)
 
 category_all.sort()
 category_colors.sort()
